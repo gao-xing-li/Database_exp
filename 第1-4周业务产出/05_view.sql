@@ -2,6 +2,8 @@
    05_view.sql
    二次元周边商品店：第四周统计视图
 
+   视图采用 CREATE OR ALTER，可在表结构存在时重复执行。
+
    执行前：
    00_create_database.sql
    01_create_tables.sql
@@ -16,7 +18,7 @@ GO
    V1. 订单详情视图
    ========================================================= */
 
-CREATE VIEW dbo.vw_OrderDetail
+CREATE OR ALTER VIEW dbo.vw_OrderDetail
 AS
 SELECT
     so.order_id,
@@ -69,7 +71,7 @@ GO
    没有产生销量的商品仍保留，统计值为 0。
    ========================================================= */
 
-CREATE VIEW dbo.vw_ProductSalesSummary
+CREATE OR ALTER VIEW dbo.vw_ProductSalesSummary
 AS
 SELECT
     p.product_id,
@@ -124,7 +126,7 @@ GO
    NORMAL：库存正常
    ========================================================= */
 
-CREATE VIEW dbo.vw_InventoryStatus
+CREATE OR ALTER VIEW dbo.vw_InventoryStatus
 AS
 SELECT
     p.product_id,
@@ -172,7 +174,7 @@ GO
    completed_order_count 和 total_consumption 为 0。
    ========================================================= */
 
-CREATE VIEW dbo.vw_MemberConsumptionSummary
+CREATE OR ALTER VIEW dbo.vw_MemberConsumptionSummary
 AS
 SELECT
     m.member_id,
@@ -182,9 +184,8 @@ SELECT
     COUNT(DISTINCT so.order_id)
         AS completed_order_count,
 
-    COALESCE(
-        SUM(soi.quantity * soi.unit_price),
-        0
+    SUM(
+        COALESCE(soi.quantity * soi.unit_price, 0)
     ) AS total_consumption
 
 FROM dbo.Member AS m

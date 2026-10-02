@@ -1,8 +1,8 @@
-/* =========================================================
+﻿/* =========================================================
    07_role.sql
-   ����Ԫ�ܱ���Ʒ�꣺���ݿ��ɫ��Ȩ����֤
+   二次元周边商品店：数据库角色与权限验证
 
-   ִ��ǰ��
+   执行前：
    00_create_database.sql
    01_create_tables.sql
    02_insert_sample_data.sql
@@ -10,12 +10,12 @@
    05_view.sql
    06_constraint.sql
 
-   ���ļ���
-   1. �����������ݿ��ɫ
-   2. ����СȨ��ԭ����Ȩ
-   3. ���� WITHOUT LOGIN �����û�
-   4. ��֤���������ɹ�
-   5. ��֤ԽȨ����ʧ��
+   本文件：
+   1. 创建三个数据库角色
+   2. 按最小权限原则授权
+   3. 创建 WITHOUT LOGIN 测试用户
+   4. 验证正常操作成功
+   5. 验证越权操作仅因权限不足失败时才判定 PASS
    ========================================================= */
 
 USE AnimeGoodsStoreDB;
@@ -23,7 +23,7 @@ GO
 
 
 /* =========================================================
-   ��һ���֣��������ݿ��ɫ
+   第一部分：创建数据库角色
    ========================================================= */
 
 IF DATABASE_PRINCIPAL_ID(N'dbrole_sales_clerk') IS NULL
@@ -41,61 +41,61 @@ GO
 
 
 /* =========================================================
-   �ڶ����֣����� / ������ԱȨ��
+   第二部分：销售 / 收银店员权限
    ========================================================= */
 
 /*
-   ���ԣ�
-   - �鿴��Ʒ�����״̬
-   - �鿴��ά����Ա
-   - �鿴Ԥ�ۡ�Ԥ��
-   - �����ʹ������۶���
-   - ȷ��Ԥ�����״̬
+   可以：
+   - 查看商品、库存状态
+   - 查看和维护会员
+   - 查看预售、预订
+   - 创建和处理销售订单
+   - 确认预售提货状态
 
-   �����ԣ�
-   - �޸Ŀ��
-   - ������Ӧ��
-   - �����ɹ�����
-   - ����Ա��
+   不可以：
+   - 修改库存
+   - 管理供应商
+   - 创建采购订单
+   - 管理员工
 */
 
 
-/* ��Ʒ��ѯ */
+/* 商品查询 */
 GRANT SELECT
 ON OBJECT::dbo.Product
 TO dbrole_sales_clerk;
 GO
 
 
-/* ʹ�ÿ��״̬��ͼ����ֱ���޸� Inventory */
+/* 使用库存状态视图，不直接修改 Inventory */
 GRANT SELECT
 ON OBJECT::dbo.vw_InventoryStatus
 TO dbrole_sales_clerk;
 GO
 
 
-/* �鿴�������� */
+/* 查看订单详情 */
 GRANT SELECT
 ON OBJECT::dbo.vw_OrderDetail
 TO dbrole_sales_clerk;
 GO
 
 
-/* ��Ա��ѯ���ǼǺ��޸� */
+/* 会员查询、登记和修改 */
 GRANT SELECT, INSERT, UPDATE
 ON OBJECT::dbo.Member
 TO dbrole_sales_clerk;
 GO
 
 
-/* �鿴Ԥ�ۻ */
+/* 查看预售活动 */
 GRANT SELECT
 ON OBJECT::dbo.PresaleActivity
 TO dbrole_sales_clerk;
 GO
 
 
-/* �鿴Ԥ�� */
+/* 查看预订 */
 GRANT SELECT
 ON OBJECT::dbo.PresaleReservation
 TO dbrole_sales_clerk;
@@ -103,8 +103,8 @@ GO
 
 
 /*
-   ��ǰ�׶�������Ա�޸�Ԥ��״̬��
-   ����ȷ��Ԥ�������ҵ��
+   当前阶段允许店员修改预订状态，
+   用于确认预售提货等业务。
 */
 GRANT UPDATE (reservation_status)
 ON OBJECT::dbo.PresaleReservation
@@ -112,21 +112,30 @@ TO dbrole_sales_clerk;
 GO
 
 
-/* �������۶��� */
+/* 创建销售订单 */
 GRANT INSERT
 ON OBJECT::dbo.SalesOrder
 TO dbrole_sales_clerk;
 GO
 
 
-/* ��ɶ��� */
+/*
+   完成订单时，需要通过 order_id 定位目标订单。
+   因此除列级 UPDATE 外，仅授予 order_id 的列级 SELECT，
+   订单业务信息仍主要通过 vw_OrderDetail 查询。
+*/
+GRANT SELECT (order_id)
+ON OBJECT::dbo.SalesOrder
+TO dbrole_sales_clerk;
+GO
+
 GRANT UPDATE (order_status, order_time)
 ON OBJECT::dbo.SalesOrder
 TO dbrole_sales_clerk;
 GO
 
 
-/* ����������ϸ */
+/* 创建订单明细 */
 GRANT INSERT
 ON OBJECT::dbo.SalesOrderItem
 TO dbrole_sales_clerk;
@@ -134,8 +143,8 @@ GO
 
 
 /*
-   �ڶ����������ǰ��
-   ������Ա��������������ɽ����ۡ�
+   在订单最终完成前，
+   允许店员调整购买数量或成交单价。
 */
 GRANT UPDATE (quantity, unit_price)
 ON OBJECT::dbo.SalesOrderItem
@@ -145,21 +154,21 @@ GO
 
 
 /* =========================================================
-   �������֣�������ԱȨ��
+   第三部分：库存管理员权限
    ========================================================= */
 
 /*
-   ���ԣ�
-   - �鿴��Ʒ�Ϳ��
-   - �޸Ŀ��
-   - �鿴�ɹ�����
-   - �Ǽǲɹ�����������
+   可以：
+   - 查看商品和库存
+   - 修改库存
+   - 查看采购订单
+   - 登记采购到货和验收
 
-   �����ԣ�
-   - �鿴��Ա��Ϣ
-   - �������۶���
-   - �����ɹ�����
-   - ����Ա��
+   不可以：
+   - 查看会员信息
+   - 创建销售订单
+   - 决定采购订单
+   - 管理员工
 */
 
 
@@ -182,8 +191,8 @@ GO
 
 
 /*
-   ������Ա����ά��ʵ�ʿ�桢
-   Ԥ����桢��������ֵ������ʱ�䡣
+   库存管理员可以维护实际库存、
+   预留库存、补货警戒值及更新时间。
 */
 GRANT UPDATE
 (
@@ -197,7 +206,7 @@ TO dbrole_inventory_manager;
 GO
 
 
-/* �鿴�ɹ���������ϸ */
+/* 查看采购订单与明细 */
 GRANT SELECT
 ON OBJECT::dbo.PurchaseOrder
 TO dbrole_inventory_manager;
@@ -210,10 +219,10 @@ GO
 
 
 /*
-   �������պ���ԵǼǣ�
-   - ����ʱ��
-   - ����Ա��
-   - �ɹ�״̬
+   到货验收后可以登记：
+   - 验收时间
+   - 验收员工
+   - 采购状态
 */
 GRANT UPDATE
 (
@@ -226,7 +235,7 @@ TO dbrole_inventory_manager;
 GO
 
 
-/* �Ǽ�ʵ���յ����� */
+/* 登记实际收到数量 */
 GRANT UPDATE (received_qty)
 ON OBJECT::dbo.PurchaseOrderItem
 TO dbrole_inventory_manager;
@@ -235,19 +244,19 @@ GO
 
 
 /* =========================================================
-   ���Ĳ��֣��곤 / ����ԱȨ��
+   第四部分：店长 / 管理员权限
    ========================================================= */
 
 /*
-   �곤���н������ľ�Ӫ����Ȩ�ޣ�
-   ���Բ�ֱ������ db_owner �� db_datawriter��
+   店长具有较完整的经营管理权限，
+   但仍不直接授予 db_owner 或 db_datawriter。
 
-   ������ȷ������Ȩ��
-   ������СȨ��ԭ��
+   采用明确对象授权，
+   保留最小权限原则。
 */
 
 
-/* ---------- ��Ӫͳ�� ---------- */
+/* ---------- 经营统计 ---------- */
 
 GRANT SELECT
 ON OBJECT::dbo.vw_OrderDetail
@@ -267,7 +276,7 @@ TO dbrole_store_manager;
 GO
 
 
-/* ---------- ��Ʒ�������� ---------- */
+/* ---------- 商品基础资料 ---------- */
 
 GRANT SELECT, INSERT, UPDATE, DELETE
 ON OBJECT::dbo.ProductCategory
@@ -287,7 +296,7 @@ TO dbrole_store_manager;
 GO
 
 
-/* ---------- Ա����ҵ���ɫ ---------- */
+/* ---------- 员工及业务角色 ---------- */
 
 GRANT SELECT, INSERT, UPDATE, DELETE
 ON OBJECT::dbo.BusinessRole
@@ -299,7 +308,7 @@ TO dbrole_store_manager;
 GO
 
 
-/* ---------- ��Ӧ�� ---------- */
+/* ---------- 供应商 ---------- */
 
 GRANT SELECT, INSERT, UPDATE, DELETE
 ON OBJECT::dbo.Supplier
@@ -307,7 +316,7 @@ TO dbrole_store_manager;
 GO
 
 
-/* ---------- Ԥ�ۻ ---------- */
+/* ---------- 预售活动 ---------- */
 
 GRANT SELECT, INSERT, UPDATE, DELETE
 ON OBJECT::dbo.PresaleActivity
@@ -315,14 +324,14 @@ TO dbrole_store_manager;
 GO
 
 
-/* �곤��Ҫ�鿴Ԥ�����󣬵���ֱ���޸Ļ�ԱԤ�� */
+/* 店长需要查看预订需求，但不直接修改会员预订 */
 GRANT SELECT
 ON OBJECT::dbo.PresaleReservation
 TO dbrole_store_manager;
 GO
 
 
-/* ---------- �ɹ����� ---------- */
+/* ---------- 采购决策 ---------- */
 
 GRANT SELECT, INSERT, UPDATE, DELETE
 ON OBJECT::dbo.PurchaseOrder
@@ -334,7 +343,7 @@ TO dbrole_store_manager;
 GO
 
 
-/* ---------- ������Ӫ����ֻ�� ---------- */
+/* ---------- 其他经营数据只读 ---------- */
 
 GRANT SELECT
 ON OBJECT::dbo.Inventory
@@ -355,8 +364,8 @@ GO
 
 
 /*
-   �곤�����ƶ���澯��ֵ��
-   ����ǰ�������ճ�ʵ�ʿ�������޸ġ�
+   店长可以制定库存警戒值，
+   但当前不负责日常实际库存数量修改。
 */
 GRANT UPDATE (reorder_point)
 ON OBJECT::dbo.Inventory
@@ -366,11 +375,11 @@ GO
 
 
 /* =========================================================
-   ���岿�֣����������û�
+   第五部分：创建测试用户
    WITHOUT LOGIN
 
-   ������ʵ������֤���ݿ��ɫȨ�ޡ�
-   ����Ҫ������ʵ SQL Server ��¼�˺š�
+   仅用于实验中验证数据库角色权限。
+   不需要创建真实 SQL Server 登录账号。
    ========================================================= */
 
 IF DATABASE_PRINCIPAL_ID(N'u_test_sales') IS NULL
@@ -388,7 +397,7 @@ GO
 
 
 /* =========================================================
-   �������֣������ɫ
+   第六部分：加入角色
    ========================================================= */
 
 IF NOT EXISTS
@@ -447,16 +456,16 @@ GO
 
 
 /* =========================================================
-   ���߲��֣�����Ȩ�޲���
+   第七部分：正常权限测试
    ========================================================= */
 
 
 /* ---------------------------------------------------------
-   P1. ���۵�Ա��
-   �������������һ�����۶���
+   P1. 销售店员：
+   正常创建并完成一笔销售订单
    --------------------------------------------------------- */
 
-PRINT N'========== P1�����۵�Ա�������۲��� ==========';
+PRINT N'========== P1：销售店员正常销售操作 ==========';
 
 BEGIN TRY
     BEGIN TRAN;
@@ -507,7 +516,7 @@ BEGIN TRY
         order_time = SYSDATETIME()
     WHERE order_id = 9301;
 
-    PRINT N'[PASS] P1�����۵�Ա��������������������۶�����';
+    PRINT N'[PASS] P1：销售店员可以正常创建和完成销售订单。';
 
     REVERT;
 
@@ -522,7 +531,7 @@ BEGIN CATCH
     IF XACT_STATE() <> 0
         ROLLBACK TRAN;
 
-    PRINT N'[FAIL] P1�����۵�Ա�������۲���ʧ�ܡ�';
+    PRINT N'[FAIL] P1：销售店员正常销售操作失败。';
     PRINT ERROR_MESSAGE();
 
 END CATCH;
@@ -531,11 +540,11 @@ GO
 
 
 /* ---------------------------------------------------------
-   P2. ������Ա��
-   �����޸Ĳ�������ֵ
+   P2. 库存管理员：
+   正常修改补货警戒值
    --------------------------------------------------------- */
 
-PRINT N'========== P2��������Ա���������� ==========';
+PRINT N'========== P2：库存管理员正常库存操作 ==========';
 
 BEGIN TRY
     BEGIN TRAN;
@@ -548,7 +557,7 @@ BEGIN TRY
         updated_at = SYSDATETIME()
     WHERE product_id = 1;
 
-    PRINT N'[PASS] P2��������Ա�����������¿����Ϣ��';
+    PRINT N'[PASS] P2：库存管理员可以正常更新库存信息。';
 
     REVERT;
 
@@ -563,7 +572,7 @@ BEGIN CATCH
     IF XACT_STATE() <> 0
         ROLLBACK TRAN;
 
-    PRINT N'[FAIL] P2��������Ա����������ʧ�ܡ�';
+    PRINT N'[FAIL] P2：库存管理员正常库存操作失败。';
     PRINT ERROR_MESSAGE();
 
 END CATCH;
@@ -572,13 +581,13 @@ GO
 
 
 /* ---------------------------------------------------------
-   P3. �곤��
-   �����޸���Ʒ��ǰ�ۼ�
+   P3. 店长：
+   正常修改商品当前售价
 
-   ����ΪȨ�޲��ԣ����������ع���
+   仅作为权限测试，事务结束后回滚。
    --------------------------------------------------------- */
 
-PRINT N'========== P3���곤������Ʒ���� ==========';
+PRINT N'========== P3：店长正常商品管理 ==========';
 
 BEGIN TRY
     BEGIN TRAN;
@@ -589,7 +598,7 @@ BEGIN TRY
     SET sale_price = 70.00
     WHERE product_id = 1;
 
-    PRINT N'[PASS] P3���곤��������������Ʒ��Ϣ��';
+    PRINT N'[PASS] P3：店长可以正常管理商品信息。';
 
     REVERT;
 
@@ -604,7 +613,7 @@ BEGIN CATCH
     IF XACT_STATE() <> 0
         ROLLBACK TRAN;
 
-    PRINT N'[FAIL] P3���곤������Ʒ��������ʧ�ܡ�';
+    PRINT N'[FAIL] P3：店长正常商品管理操作失败。';
     PRINT ERROR_MESSAGE();
 
 END CATCH;
@@ -613,18 +622,18 @@ GO
 
 
 /* =========================================================
-   �ڰ˲��֣�ԽȨ��������
+   第八部分：越权操作测试
    ========================================================= */
 
 
 /* ---------------------------------------------------------
-   N1. ���۵�Ա��ͼ�޸Ĳɹ�����
+   N1. 销售店员试图修改采购订单
 
-   Ԥ�ڣ�
-   Ȩ�޲��㣬����ʧ�ܡ�
+   预期：
+   权限不足，操作失败。
    --------------------------------------------------------- */
 
-PRINT N'========== N1�����۵�ԱԽȨ�޸Ĳɹ����� ==========';
+PRINT N'========== N1：销售店员越权修改采购订单 ==========';
 
 BEGIN TRY
     BEGIN TRAN;
@@ -640,12 +649,15 @@ BEGIN TRY
 
     REVERT;
 
-    PRINT N'[FAIL] N1�����۵�Ա��Ȼ�����޸Ĳɹ�������';
+    PRINT N'[FAIL] N1：销售店员竟然可以修改采购订单。';
 
     ROLLBACK TRAN;
 END TRY
 
 BEGIN CATCH
+
+    DECLARE @N1_ErrorNumber INT = ERROR_NUMBER();
+    DECLARE @N1_ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
 
     IF USER_NAME() = N'u_test_sales'
         REVERT;
@@ -653,8 +665,18 @@ BEGIN CATCH
     IF XACT_STATE() <> 0
         ROLLBACK TRAN;
 
-    PRINT N'[PASS] N1�����۵�ԱԽȨ�޸Ĳɹ���������ȷ�ܾ���';
-    PRINT ERROR_MESSAGE();
+    IF @N1_ErrorNumber = 229
+       AND @N1_ErrorMessage LIKE N'%PurchaseOrder%'
+    BEGIN
+        PRINT N'[PASS] N1：销售店员修改 PurchaseOrder 因 UPDATE 权限不足被正确拒绝。';
+    END
+    ELSE
+    BEGIN
+        PRINT N'[FAIL] N1：操作虽然失败，但失败原因不是预期的权限拒绝（错误号 229）。';
+    END;
+
+    PRINT N'错误号：' + CAST(@N1_ErrorNumber AS NVARCHAR(20));
+    PRINT N'错误信息：' + @N1_ErrorMessage;
 
 END CATCH;
 GO
@@ -662,13 +684,13 @@ GO
 
 
 /* ---------------------------------------------------------
-   N2. ������Ա��ͼ��ȡ��Ա����
+   N2. 库存管理员试图读取会员数据
 
-   Ԥ�ڣ�
-   Ȩ�޲��㣬����ʧ�ܡ�
+   预期：
+   权限不足，操作失败。
    --------------------------------------------------------- */
 
-PRINT N'========== N2��������ԱԽȨ��ȡ��Ա��Ϣ ==========';
+PRINT N'========== N2：库存管理员越权读取会员信息 ==========';
 
 BEGIN TRY
 
@@ -682,17 +704,30 @@ BEGIN TRY
 
     REVERT;
 
-    PRINT N'[FAIL] N2��������Ա��Ȼ���Զ�ȡ��Ա���ݡ�';
+    PRINT N'[FAIL] N2：库存管理员竟然可以读取会员数据。';
 
 END TRY
 
 BEGIN CATCH
 
+    DECLARE @N2_ErrorNumber INT = ERROR_NUMBER();
+    DECLARE @N2_ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
+
     IF USER_NAME() = N'u_test_inventory'
         REVERT;
 
-    PRINT N'[PASS] N2��������ԱԽȨ��ȡ��Ա��Ϣ����ȷ�ܾ���';
-    PRINT ERROR_MESSAGE();
+    IF @N2_ErrorNumber = 229
+       AND @N2_ErrorMessage LIKE N'%Member%'
+    BEGIN
+        PRINT N'[PASS] N2：库存管理员读取 Member 因 SELECT 权限不足被正确拒绝。';
+    END
+    ELSE
+    BEGIN
+        PRINT N'[FAIL] N2：操作虽然失败，但失败原因不是预期的权限拒绝（错误号 229）。';
+    END;
+
+    PRINT N'错误号：' + CAST(@N2_ErrorNumber AS NVARCHAR(20));
+    PRINT N'错误信息：' + @N2_ErrorMessage;
 
 END CATCH;
 GO
@@ -700,13 +735,13 @@ GO
 
 
 /* ---------------------------------------------------------
-   N3. ���۵�Ա��ͼֱ���޸Ŀ������
+   N3. 销售店员试图直接修改库存数量
 
-   Ԥ�ڣ�
-   Ȩ�޲��㣬����ʧ�ܡ�
+   预期：
+   权限不足，操作失败。
    --------------------------------------------------------- */
 
-PRINT N'========== N3�����۵�ԱԽȨ�޸Ŀ�� ==========';
+PRINT N'========== N3：销售店员越权修改库存 ==========';
 
 BEGIN TRY
     BEGIN TRAN;
@@ -722,12 +757,15 @@ BEGIN TRY
 
     REVERT;
 
-    PRINT N'[FAIL] N3�����۵�Ա��Ȼ����ֱ���޸Ŀ�档';
+    PRINT N'[FAIL] N3：销售店员竟然可以直接修改库存。';
 
     ROLLBACK TRAN;
 END TRY
 
 BEGIN CATCH
+
+    DECLARE @N3_ErrorNumber INT = ERROR_NUMBER();
+    DECLARE @N3_ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
 
     IF USER_NAME() = N'u_test_sales'
         REVERT;
@@ -735,8 +773,18 @@ BEGIN CATCH
     IF XACT_STATE() <> 0
         ROLLBACK TRAN;
 
-    PRINT N'[PASS] N3�����۵�ԱԽȨ�޸Ŀ�汻��ȷ�ܾ���';
-    PRINT ERROR_MESSAGE();
+    IF @N3_ErrorNumber = 229
+       AND @N3_ErrorMessage LIKE N'%Inventory%'
+    BEGIN
+        PRINT N'[PASS] N3：销售店员修改 Inventory 因 UPDATE 权限不足被正确拒绝。';
+    END
+    ELSE
+    BEGIN
+        PRINT N'[FAIL] N3：操作虽然失败，但失败原因不是预期的权限拒绝（错误号 229）。';
+    END;
+
+    PRINT N'错误号：' + CAST(@N3_ErrorNumber AS NVARCHAR(20));
+    PRINT N'错误信息：' + @N3_ErrorMessage;
 
 END CATCH;
 GO
@@ -744,7 +792,7 @@ GO
 
 
 /* =========================================================
-   �ھŲ��֣���ɫ���Ա���
+   第九部分：角色与成员检查
    ========================================================= */
 
 SELECT

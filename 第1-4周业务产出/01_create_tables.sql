@@ -11,6 +11,41 @@ GO
 
 
 /* =========================================================
+   0. 重建准备
+
+   为同时兼容首次运行和已有数据库上的完整链重复运行，
+   本脚本先删除本项目已有视图，再按外键依赖逆序删除
+   15 张业务表，随后重新创建。
+
+   注意：重新执行本脚本会清空这些业务表中的现有数据。
+   本行为用于课程实验的可复现重建，不应用于生产数据库。
+   ========================================================= */
+
+DROP VIEW IF EXISTS dbo.vw_MemberConsumptionSummary;
+DROP VIEW IF EXISTS dbo.vw_InventoryStatus;
+DROP VIEW IF EXISTS dbo.vw_ProductSalesSummary;
+DROP VIEW IF EXISTS dbo.vw_OrderDetail;
+GO
+
+DROP TABLE IF EXISTS dbo.SalesOrderItem;
+DROP TABLE IF EXISTS dbo.SalesOrder;
+DROP TABLE IF EXISTS dbo.PurchaseOrderItem;
+DROP TABLE IF EXISTS dbo.PurchaseOrder;
+DROP TABLE IF EXISTS dbo.PresaleReservation;
+DROP TABLE IF EXISTS dbo.PresaleActivity;
+DROP TABLE IF EXISTS dbo.Inventory;
+DROP TABLE IF EXISTS dbo.Product;
+DROP TABLE IF EXISTS dbo.Employee;
+DROP TABLE IF EXISTS dbo.CharacterInfo;
+DROP TABLE IF EXISTS dbo.Supplier;
+DROP TABLE IF EXISTS dbo.Member;
+DROP TABLE IF EXISTS dbo.BusinessRole;
+DROP TABLE IF EXISTS dbo.AnimeIP;
+DROP TABLE IF EXISTS dbo.ProductCategory;
+GO
+
+
+/* =========================================================
    1. ProductCategory 商品类别
    ========================================================= */
 
@@ -380,11 +415,20 @@ CREATE TABLE dbo.PresaleActivity
     CONSTRAINT CK_PresaleActivity_Time
         CHECK (start_time < end_time),
 
+    CONSTRAINT CK_PresaleActivity_PickupDeadline
+        CHECK (
+            pickup_deadline IS NULL
+            OR pickup_deadline > end_time
+        ),
+
     CONSTRAINT CK_PresaleActivity_UnitPrice
         CHECK (presale_unit_price > 0),
 
     CONSTRAINT CK_PresaleActivity_Deposit
         CHECK (deposit_per_unit >= 0),
+
+    CONSTRAINT CK_PresaleActivity_DepositNotExceedPrice
+        CHECK (deposit_per_unit <= presale_unit_price),
 
     CONSTRAINT CK_PresaleActivity_DecisionDemand
         CHECK (
@@ -453,6 +497,14 @@ CREATE TABLE dbo.PresaleReservation
     CONSTRAINT UQ_PresaleReservation_ReservationNo
         UNIQUE (reservation_no),
 
+    /*
+       用于后续 SalesOrder 的 (reservation_id, member_id)
+       复合外键，保证预售提货订单中的会员与预订会员一致。
+       reservation_id 本身仍是主键；该组合不作为额外候选码解释。
+    */
+    CONSTRAINT UQ_PresaleReservation_ReservationMember
+        UNIQUE (reservation_id, member_id),
+
     CONSTRAINT FK_PresaleReservation_PresaleActivity
         FOREIGN KEY (presale_id)
         REFERENCES dbo.PresaleActivity(presale_id),
@@ -482,6 +534,13 @@ CREATE TABLE dbo.PresaleReservation
                 'PICKED_UP',
                 'EXPIRED'
             )
+        ),
+
+    CONSTRAINT CK_PresaleReservation_CancelInfo
+        CHECK (
+            (reservation_status = 'CANCELLED' AND cancelled_at IS NOT NULL)
+            OR
+            (reservation_status <> 'CANCELLED' AND cancelled_at IS NULL)
         )
 );
 GO
@@ -565,16 +624,33 @@ CREATE TABLE dbo.PurchaseOrder
             OR presale_id IS NOT NULL
         ),
 
-    -- 如果订单已经标记为完整验收，
-    -- 则验收时间和验收员工必须存在
+    -- RECEIVED 与验收时间 / 验收员工保持一致：
+    -- 完成验收后二者均存在；其他状态下二者均为空。
     CONSTRAINT CK_PurchaseOrder_ReceivedInfo
         CHECK (
-            purchase_status <> 'RECEIVED'
-            OR
             (
-                received_time IS NOT NULL
+                purchase_status = 'RECEIVED'
+                AND received_time IS NOT NULL
                 AND received_by IS NOT NULL
             )
+            OR
+            (
+                purchase_status <> 'RECEIVED'
+                AND received_time IS NULL
+                AND received_by IS NULL
+            )
+        ),
+
+    CONSTRAINT CK_PurchaseOrder_ExpectedArrival
+        CHECK (
+            expected_arrival IS NULL
+            OR expected_arrival >= order_time
+        ),
+
+    CONSTRAINT CK_PurchaseOrder_ReceivedTime
+        CHECK (
+            received_time IS NULL
+            OR received_time >= order_time
         )
 );
 GO
@@ -662,6 +738,10 @@ CREATE TABLE dbo.SalesOrder
         FOREIGN KEY (reservation_id)
         REFERENCES dbo.PresaleReservation(reservation_id),
 
+    CONSTRAINT FK_SalesOrder_ReservationMember
+        FOREIGN KEY (reservation_id, member_id)
+        REFERENCES dbo.PresaleReservation(reservation_id, member_id),
+
     CONSTRAINT CK_SalesOrder_OrderID
         CHECK (order_id > 0),
 
@@ -674,6 +754,13 @@ CREATE TABLE dbo.SalesOrder
         CHECK (
             order_status IN
             ('CREATED', 'COMPLETED', 'CANCELLED')
+        ),
+
+    CONSTRAINT CK_SalesOrder_StatusTime
+        CHECK (
+            (order_status = 'COMPLETED' AND order_time IS NOT NULL)
+            OR
+            (order_status <> 'COMPLETED' AND order_time IS NULL)
         ),
 
     /*

@@ -269,30 +269,8 @@ GO
 /* ---------------------------------------------------------
    U = UPDATE
 
-   模拟订单由 CREATED 变为 COMPLETED。
+   在订单完成前先修改并确认订单明细。
    --------------------------------------------------------- */
-
-SELECT *
-FROM dbo.SalesOrder
-WHERE order_id = 9001;
-GO
-
-
-UPDATE dbo.SalesOrder
-SET
-    order_status = 'COMPLETED',
-    order_time = SYSDATETIME()
-WHERE order_id = 9001;
-GO
-
-
-SELECT *
-FROM dbo.SalesOrder
-WHERE order_id = 9001;
-GO
-
-
-/* 同时演示修改订单明细数量 */
 
 SELECT *
 FROM dbo.SalesOrderItem
@@ -317,6 +295,28 @@ SELECT
 FROM dbo.SalesOrderItem
 WHERE order_id = 9001
   AND product_id = 1;
+GO
+
+
+/* 确认明细后，将订单由 CREATED 变为 COMPLETED */
+
+SELECT *
+FROM dbo.SalesOrder
+WHERE order_id = 9001;
+GO
+
+
+UPDATE dbo.SalesOrder
+SET
+    order_status = 'COMPLETED',
+    order_time = SYSDATETIME()
+WHERE order_id = 9001;
+GO
+
+
+SELECT *
+FROM dbo.SalesOrder
+WHERE order_id = 9001;
 GO
 
 

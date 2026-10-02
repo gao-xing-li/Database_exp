@@ -195,9 +195,8 @@ SELECT
 
     COUNT(DISTINCT so.order_id) AS completed_order_count,
 
-    COALESCE(
-        SUM(soi.quantity * soi.unit_price),
-        0
+    SUM(
+        COALESCE(soi.quantity * soi.unit_price, 0)
     ) AS total_consumption
 
 FROM dbo.Member AS m
