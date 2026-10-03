@@ -1,0 +1,6 @@
+# WorkBuddy AI 本地工作目录（不上传远端）
+.workbuddy-ai/
+
+# 系统文件
+Thumbs.db
+desktop.ini
