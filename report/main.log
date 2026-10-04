@@ -1215,9 +1215,10 @@ Package fontspec Info: Font family 'SimSun(1)' created for font 'SimSun' with
 ] [2] [3] [4] [5]
 File: figures//setup.png Graphic file (type bmp)
 <figures//setup.png>
+ [6]
 File: figures//crud.png Graphic file (type bmp)
 <figures//crud.png>
- [6] [7]
+ [7]
 File: figures//query.png Graphic file (type bmp)
 <figures//query.png>
  [8]
@@ -1234,4 +1235,4 @@ File: figures//permissions.png Graphic file (type bmp)
 Package rerunfilecheck Info: File `main.out' has not changed.
 (rerunfilecheck)             Checksum: 8E4F875FC6AEB4E50FCBE6E538CF6D4B;3834.
  )
-Output written on main.xdv (17 pages, 301508 bytes).
+Output written on main.xdv (17 pages, 306248 bytes).
