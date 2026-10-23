@@ -1,0 +1,15 @@
+{
+  "status": "PASS",
+  "flows": [
+    "登录/退出",
+    "管理员新增修改商品",
+    "库存员调整库存",
+    "店员草稿明细及结账",
+    "顾客本人订单与越权拒绝",
+    "390px移动布局"
+  ],
+  "console_errors": [],
+  "screenshots": 8,
+  "checkout_amount": "50.00",
+  "remaining_stock": 8
+}

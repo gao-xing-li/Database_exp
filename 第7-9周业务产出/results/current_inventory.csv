@@ -1,0 +1,7 @@
+﻿product_code,on_hand_qty,reserved_qty,available_qty,reorder_point,stock_status
+P001,8,0,8,5,NORMAL
+P002,5,0,5,4,NORMAL
+P003,2,0,2,3,LOW_STOCK
+P004,12,0,12,5,NORMAL
+P005,6,0,6,3,NORMAL
+P006,9,0,9,4,NORMAL

@@ -4,3 +4,11 @@
 # 系统文件
 Thumbs.db
 desktop.ini
+
+.venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+config.local.json
+*.local.env
+*.jsonl
