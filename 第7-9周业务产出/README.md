@@ -54,6 +54,8 @@ Windows PowerShell 的虚拟环境激活为 `.\.venv\Scripts\Activate.ps1`，Pyt
 
 ## 运行测试
 
+忘记网页密码时，先按[操作手册的密码重设步骤](02_操作手册.md)生成本地 SQL 并在 SSMS 执行，无需重新初始化数据库。SSMS、本机 SQL Server 与截图复现的关系，也见操作手册。本地改 `COURSE_DEMO_PASSWORD` 只影响下一次初始化的输入，不会修改已有账户。
+
 数据库和 `config.local.json` 准备好后，在相同虚拟环境设置初始化时的 `COURSE_DEMO_PASSWORD`。
 
 ```bash
