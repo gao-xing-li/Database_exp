@@ -6,16 +6,16 @@ Flask + SQL Server 的单店现货经营工作台。已实现登录、商品 CRU
 
 ## 阅读入口
 
-- [设计与决策](../第7-9周%20设计与决策.md)，[架构与接口](01_架构与接口.md)。
+- [设计与决策](../docs/设计与决策/第7-9周.md)，[架构与接口](01_架构与接口.md)。
 - [操作手册](02_操作手册.md)，[测试与验证](03_测试与验证记录.md)。
-- [第二阶段报告草稿](../第二阶段报告_草稿.md)，[分工说明](04_第二阶段分工.md)，[ai_log](ai_log.md)。
+- [正式报告](../第二阶段提交/阶段报告.pdf)，[分工说明](04_第二阶段分工.md)，[ai_log](ai_log.md)。
 - [恢复的课程任务原文](任务原文_聊天恢复.txt)，[第六周结构字典](../第六周业务产出/02_重构方案与数据字典.md)。
 
 本机Windows使用Conda的安装、激活、SQL Server准备与日常启动步骤，见[第二阶段提交说明](../第二阶段提交/README.md)。
 
 ## 从空环境启动
 
-要求 Python 3.12、可运行 SQL Server 2022 的 x86-64 系统。SQL Server 可以是本机独立 Developer 实例，或本目录 Compose 容器。浏览器使用支持 `dialog` 和 `fetch` 的现代版本。本次实际版本记录在 [environment.json](results/environment.json)。
+要求 Python 3.12、可运行 SQL Server 2022 的 x86-64 系统。SQL Server 可以是本机独立 Developer 实例，或本目录 Compose 容器。浏览器使用支持 `dialog` 和 `fetch` 的现代版本。首轮云端环境的版本记录在 [environment.json](results/environment.json)。
 
 在仓库根目录建立虚拟环境。
 

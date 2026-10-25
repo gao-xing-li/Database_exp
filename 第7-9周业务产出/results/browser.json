@@ -5,11 +5,21 @@
     "管理员新增修改商品",
     "库存员调整库存",
     "店员草稿明细及结账",
+    "目录25元登记后调为30元，刷新和改数量保留25元，结账两件50元",
     "顾客本人订单与越权拒绝",
     "390px移动布局"
   ],
   "console_errors": [],
-  "screenshots": 8,
+  "screenshots": 9,
   "checkout_amount": "50.00",
-  "remaining_stock": 8
+  "remaining_stock": 8,
+  "pricing": {
+    "registered_unit_price": "25.00",
+    "later_catalog_price": "30.00",
+    "quantity_three_amount": "75.00",
+    "quantity_two_checkout_amount": "50.00",
+    "initial_stock": 10,
+    "remaining_stock": 8,
+    "original_business_data_preserved": true
+  }
 }
