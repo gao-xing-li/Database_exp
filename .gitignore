@@ -13,3 +13,22 @@ config.local.json
 *.local.env
 *.local.sql
 *.jsonl
+
+# 本机 Conda 环境及缓存
+.conda-env/
+.conda-pkgs/
+
+# 本地工作记录、原始截图与编译缓存
+/output/
+/results(7-9)/
+/提交整理进度.md
+/report-stage2/*.pdf
+/report-stage2/*.log
+/report-stage2/*.aux
+/report-stage2/*.toc
+/report-stage2/*.out
+/report-stage2/*.synctex.gz
+/report-stage2/build-check.json
+/report-stage2/figure-sources.json
+/report-stage2/verification.json
+/第7-9周业务产出/results/local_setup.json

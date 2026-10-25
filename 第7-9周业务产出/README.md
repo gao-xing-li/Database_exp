@@ -11,6 +11,8 @@ Flask + SQL Server 的单店现货经营工作台。已实现登录、商品 CRU
 - [第二阶段报告草稿](../第二阶段报告_草稿.md)，[分工说明](04_第二阶段分工.md)，[ai_log](ai_log.md)。
 - [恢复的课程任务原文](任务原文_聊天恢复.txt)，[第六周结构字典](../第六周业务产出/02_重构方案与数据字典.md)。
 
+本机Windows使用Conda的安装、激活、SQL Server准备与日常启动步骤，见[第二阶段提交说明](../第二阶段提交/README.md)。
+
 ## 从空环境启动
 
 要求 Python 3.12、可运行 SQL Server 2022 的 x86-64 系统。SQL Server 可以是本机独立 Developer 实例，或本目录 Compose 容器。浏览器使用支持 `dialog` 和 `fetch` 的现代版本。本次实际版本记录在 [environment.json](results/environment.json)。
@@ -63,7 +65,7 @@ python -m pytest -q --junitxml=results/pytest.xml
 python scripts/export_evidence.py
 ```
 
-测试只接受专用样例库，生成独立测试商品和订单，结束后清理这些记录，保留原始 6 件商品、6 笔订单及库存。Sequence 消耗的编号不回退。不要在有并行演示操作时运行测试，测试拥有清理其自身数据所需的管理角色权限。
+测试只接受专用样例库，生成独立测试商品和订单，结束后清理这些记录，保留测试前已有的商品、订单及库存。Sequence 消耗的编号不回退。不要在有并行演示操作时运行测试，测试拥有清理其自身数据所需的管理角色权限。
 
 可选浏览器测试，先保持 `run.py` 运行，另开同环境终端。
 
@@ -73,7 +75,7 @@ python -m playwright install chromium
 python scripts/browser_smoke.py
 ```
 
-在首次安装 Chromium 提示缺少系统库时，按 Playwright 对应操作系统的安装提示补齐。浏览器脚本输出 `results/browser.json` 和 8 张角色流程截图，也会清理自身创建的演示商品和订单。设置自定义浏览器缓存目录时，安装和运行使用相同 `PLAYWRIGHT_BROWSERS_PATH`。
+在首次安装 Chromium 提示缺少系统库时，按 Playwright 对应操作系统的安装提示补齐。浏览器脚本输出 `results/browser.json` 和9张角色流程截图，也会清理自身创建的演示商品和订单。设置自定义浏览器缓存目录时，安装和运行使用相同 `PLAYWRIGHT_BROWSERS_PATH`。
 
 ## 目录与层级
 
@@ -95,3 +97,11 @@ results/                   可提交的测试结果、截图和业务值
 日志 `results/app.local.jsonl` 和本地配置不提交。日志记录请求标识、时间、操作、角色、错误码和结果，详细异常留在后端。用户只看到统一简短提示和请求标识。
 
 本版本是本机课程演示版本。未验证公网部署、生产证书、多实例会话、限流、支付网关或生产运维。对外部署时需独立配置 HTTPS、`cookie_secure`、账户及持久日志，并核对驱动的加密连接设置。
+
+
+## Windows 本机身份初始化
+
+若 SSMS 已能以 Windows 身份连接本机管理员账户，可额外安装 `requirements-windows.txt`，设置 `DB_ADMIN_TRUSTED=1`、`DB_SERVER=127.0.0.1` 和实际 `DB_PORT`，再提供 `COURSE_DEMO_PASSWORD` 后运行原 `scripts/init_demo.py`。此模式仅允许 Windows 本机连接，使用 ODBC Driver 18；网页运行时仍使用 pymssql 与受限 SQL 账号。原 SQL 登录与 Docker 初始化方式保留。完整Conda复现命令见[第二阶段提交说明](../第二阶段提交/README.md)。
+
+
+最新版本48项测试与7组完整浏览器流程通过，见[实测记录](03_测试与验证记录.md)。需要更新的本人操作截图见[实机截图清单](05_本轮实机截图清单.md)。

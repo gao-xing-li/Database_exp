@@ -147,14 +147,61 @@ def test_checkout_multiple_products_and_historical_price(clients,business):
     clients["clerk"].ok("POST",f"/orders/{oid}/checkout",{})
     detail=clients["clerk"].ok("GET",f"/orders/{oid}")
     assert detail["order"]["order_status"]=="COMPLETED" and detail["order"]["order_time"]
-    assert detail["amount"]=="85.00"
+    assert detail["amount"]=="77.50"
     assert stock(p1)["on_hand_qty"]==7 and stock(p1)["reserved_qty"]==2 and stock(p2)["on_hand_qty"]==6
     value["sale_price"]="99.00"
     clients["manager"].ok("PUT",f"/products/{p1}",value)
-    assert clients["clerk"].ok("GET",f"/orders/{oid}")["amount"]=="85.00"
+    assert clients["clerk"].ok("GET",f"/orders/{oid}")["amount"]=="77.50"
     for method,path,data in [("POST",f"/orders/{oid}/checkout",{}),("PATCH",f"/orders/{oid}",{"member_id":2}),
             ("PUT",f"/orders/{oid}/items/{p1}",{"quantity":1}),("DELETE",f"/orders/{oid}",None)]:
         check_error(clients["clerk"].request(method,path,data),409,"BUSINESS_RULE")
+
+
+
+def test_catalog_price_snapshot_survives_refresh_quantity_and_checkout(clients,business):
+    product,order,stock=business
+    pid,value=product(stock=10,price="20.00")
+    oid=order(items=[(pid,2)])
+    value["sale_price"]="25.00"
+    clients["manager"].ok("PUT",f"/products/{pid}",value)
+    assert clients["clerk"].ok("GET","/products?q="+value["product_code"])[0]["sale_price"]=="25.00"
+    for _ in range(2):
+        clients["clerk"].ok("GET","/orders")
+        detail=clients["clerk"].ok("GET",f"/orders/{oid}")
+        assert detail["items"][0]["unit_price"]=="20.00" and detail["amount"]=="40.00"
+    clients["clerk"].ok("PUT",f"/orders/{oid}/items/{pid}",{"quantity":3})
+    assert clients["clerk"].ok("GET",f"/orders/{oid}")["amount"]=="60.00"
+    # Replacing the quantity through the add control cannot silently replace the unit price.
+    clients["clerk"].ok("PUT",f"/orders/{oid}/items/{pid}",{"quantity":4,"expected_unit_price":"25.00"})
+    assert clients["clerk"].ok("GET",f"/orders/{oid}")["amount"]=="80.00"
+    clients["clerk"].ok("POST",f"/orders/{oid}/checkout",{})
+    assert clients["clerk"].ok("GET",f"/orders/{oid}")["amount"]=="80.00"
+    assert stock(pid)["on_hand_qty"]==6
+    second=order(items=[(pid,1)])
+    assert clients["clerk"].ok("GET",f"/orders/{second}")["items"][0]["unit_price"]=="25.00"
+    value["sale_price"]="30.00"
+    clients["manager"].ok("PUT",f"/products/{pid}",value)
+    assert clients["clerk"].ok("GET",f"/orders/{oid}")["amount"]=="80.00"
+
+
+def test_new_item_requires_matching_displayed_catalog_price(clients,business):
+    product,order,stock=business
+    pid,value=product(stock=5)
+    oid=order()
+    value["sale_price"]="18.00"
+    clients["manager"].ok("PUT",f"/products/{pid}",value)
+    for displayed,status,code in [("12.50",409,"PRICE_CHANGED"),("1.00",409,"PRICE_CHANGED"),(None,400,"INVALID_INPUT"),("NaN",400,"INVALID_INPUT")]:
+        check_error(clients["clerk"].request("PUT",f"/orders/{oid}/items/{pid}",{"quantity":1,"expected_unit_price":displayed}),status,code)
+        assert clients["clerk"].ok("GET",f"/orders/{oid}")["items"]==[]
+        assert stock(pid)["on_hand_qty"]==5
+    clients["clerk"].ok("PUT",f"/orders/{oid}/items/{pid}",{"quantity":1,"expected_unit_price":"18.00"})
+    clients["clerk"].ok("DELETE",f"/orders/{oid}/items/{pid}")
+    value["sale_price"]="22.00"
+    clients["manager"].ok("PUT",f"/products/{pid}",value)
+    check_error(clients["clerk"].request("PUT",f"/orders/{oid}/items/{pid}",{"quantity":1,"expected_unit_price":"18.00"}),409,"PRICE_CHANGED")
+    clients["clerk"].ok("PUT",f"/orders/{oid}/items/{pid}",{"quantity":2,"expected_unit_price":"22.00"})
+    detail=clients["clerk"].ok("GET",f"/orders/{oid}")
+    assert detail["items"][0]["unit_price"]=="22.00" and detail["amount"]=="44.00"
 
 
 def test_insufficient_stock_rolls_back_entire_order(clients,business):
@@ -167,7 +214,7 @@ def test_insufficient_stock_rolls_back_entire_order(clients,business):
     detail=clients["clerk"].ok("GET",f"/orders/{oid}")
     assert stock(p1)["on_hand_qty"]==5
     assert detail["order"]["order_status"]=="CREATED" and detail["order"]["order_time"] is None
-    assert detail["items"][0]["unit_price"]=="12.50" # 失败时价格同步也回滚
+    assert detail["items"][0]["unit_price"]=="12.50" # 失败后保留原登记单价
 
 
 def test_empty_checkout_cancel_and_bad_member(clients,business):
@@ -239,7 +286,7 @@ def test_database_connection_failure_and_log(app,clients):
         config["port"]=original
     logger=app.extensions["audit_logger"]
     for h in logger.handlers:h.flush()
-    lines=Path(logger.handlers[0].baseFilename).read_text().splitlines()
+    lines=Path(logger.handlers[0].baseFilename).read_text(encoding="utf-8").splitlines()
     records=[]
     for line in lines:
         try: records.append(json.loads(line))

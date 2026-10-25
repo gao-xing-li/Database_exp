@@ -1,0 +1,628 @@
+{
+  "status": "PASS",
+  "checked_at": "2026-10-24T23:06:37.8247531+08:00",
+  "note": "Five accounts checked through real UI. Only read data, searched, switched views/accounts, reloaded and opened/cancelled dialogs. Prior 46-test pytest run is separate.",
+  "checks": [
+    {
+      "name": "manager-products",
+      "status": "PASS",
+      "account": "manager · 店长 / 管理员",
+      "title": "商品管理",
+      "nav": [
+        "商品管理 01",
+        "库存管理 02",
+        "销售订单 03"
+      ],
+      "columns": [
+        "商品",
+        "类别 / IP",
+        "售价",
+        "上架状态",
+        "操作"
+      ],
+      "metrics": [
+        "商品数量",
+        "在售商品",
+        "非在售商品"
+      ],
+      "values": [
+        "8",
+        "8",
+        "0"
+      ],
+      "metricsHidden": false,
+      "add": true,
+      "edit": true,
+      "adjust": false,
+      "newOrder": false,
+      "rows": 8,
+      "search": "",
+      "members": []
+    },
+    {
+      "status": "PASS",
+      "name": "open-cancel-dialog",
+      "title": "编辑商品"
+    },
+    {
+      "name": "manager-filter",
+      "status": "PASS",
+      "account": "manager · 店长 / 管理员",
+      "title": "商品管理",
+      "nav": [
+        "商品管理 01",
+        "库存管理 02",
+        "销售订单 03"
+      ],
+      "columns": [
+        "商品",
+        "类别 / IP",
+        "售价",
+        "上架状态",
+        "操作"
+      ],
+      "metrics": [
+        "商品数量",
+        "在售商品",
+        "非在售商品"
+      ],
+      "values": [
+        "2",
+        "2",
+        "0"
+      ],
+      "metricsHidden": false,
+      "add": true,
+      "edit": true,
+      "adjust": false,
+      "newOrder": false,
+      "rows": 2,
+      "search": "DEMO",
+      "members": []
+    },
+    {
+      "name": "manager-stock",
+      "status": "PASS",
+      "account": "manager · 店长 / 管理员",
+      "title": "库存管理",
+      "nav": [
+        "商品管理 01",
+        "库存管理 02",
+        "销售订单 03"
+      ],
+      "columns": [
+        "商品",
+        "实际库存",
+        "预留库存",
+        "可售库存",
+        "补货警戒值",
+        "库存状态",
+        "操作"
+      ],
+      "metrics": [
+        "库存商品",
+        "可售数量",
+        "需要补货"
+      ],
+      "values": [
+        "8",
+        "54",
+        "1"
+      ],
+      "metricsHidden": false,
+      "add": false,
+      "edit": false,
+      "adjust": true,
+      "newOrder": false,
+      "rows": 8,
+      "search": "",
+      "members": []
+    },
+    {
+      "name": "manager-filter",
+      "status": "PASS",
+      "account": "manager · 店长 / 管理员",
+      "title": "商品管理",
+      "nav": [
+        "商品管理 01",
+        "库存管理 02",
+        "销售订单 03"
+      ],
+      "columns": [
+        "商品",
+        "类别 / IP",
+        "售价",
+        "上架状态",
+        "操作"
+      ],
+      "metrics": [
+        "商品数量",
+        "在售商品",
+        "非在售商品"
+      ],
+      "values": [
+        "2",
+        "2",
+        "0"
+      ],
+      "metricsHidden": false,
+      "add": true,
+      "edit": true,
+      "adjust": false,
+      "newOrder": false,
+      "rows": 2,
+      "search": "DEMO",
+      "members": []
+    },
+    {
+      "name": "manager-orders",
+      "status": "PASS",
+      "account": "manager · 店长 / 管理员",
+      "title": "销售订单",
+      "nav": [
+        "商品管理 01",
+        "库存管理 02",
+        "销售订单 03"
+      ],
+      "columns": [
+        "订单编号",
+        "会员",
+        "状态",
+        "明细 / 金额",
+        "完成时间",
+        "操作"
+      ],
+      "metrics": [
+        "订单数量",
+        "待结账",
+        "已完成"
+      ],
+      "values": [
+        "8",
+        "1",
+        "7"
+      ],
+      "metricsHidden": false,
+      "add": false,
+      "edit": false,
+      "adjust": false,
+      "newOrder": true,
+      "rows": 8,
+      "search": "DEMO",
+      "members": [
+        "会员 #1",
+        "会员 #1",
+        "散客",
+        "会员 #3",
+        "会员 #1",
+        "会员 #1",
+        "会员 #2",
+        "散客"
+      ]
+    },
+    {
+      "status": "PASS",
+      "name": "open-cancel-dialog",
+      "title": "创建现货订单"
+    },
+    {
+      "name": "clerk-products",
+      "status": "PASS",
+      "account": "clerk · 销售 / 收银",
+      "title": "商品目录",
+      "nav": [
+        "商品目录 01",
+        "销售订单 02"
+      ],
+      "columns": [
+        "商品",
+        "类别 / IP",
+        "售价",
+        "可售库存",
+        "上架状态"
+      ],
+      "metrics": [
+        "目录商品",
+        "在售商品",
+        "可售数量"
+      ],
+      "values": [
+        "8",
+        "8",
+        "54"
+      ],
+      "metricsHidden": false,
+      "add": false,
+      "edit": false,
+      "adjust": false,
+      "newOrder": false,
+      "rows": 8,
+      "search": "",
+      "members": []
+    },
+    {
+      "name": "clerk-orders",
+      "status": "PASS",
+      "account": "clerk · 销售 / 收银",
+      "title": "销售订单",
+      "nav": [
+        "商品目录 01",
+        "销售订单 02"
+      ],
+      "columns": [
+        "订单编号",
+        "会员",
+        "状态",
+        "明细 / 金额",
+        "完成时间",
+        "操作"
+      ],
+      "metrics": [
+        "订单数量",
+        "待结账",
+        "已完成"
+      ],
+      "values": [
+        "8",
+        "1",
+        "7"
+      ],
+      "metricsHidden": false,
+      "add": false,
+      "edit": false,
+      "adjust": false,
+      "newOrder": true,
+      "rows": 8,
+      "search": "",
+      "members": [
+        "会员 #1",
+        "会员 #1",
+        "散客",
+        "会员 #3",
+        "会员 #1",
+        "会员 #1",
+        "会员 #2",
+        "散客"
+      ]
+    },
+    {
+      "status": "PASS",
+      "name": "open-cancel-dialog",
+      "title": "创建现货订单"
+    },
+    {
+      "name": "inventory",
+      "status": "PASS",
+      "account": "inventory · 库存管理员",
+      "title": "库存管理",
+      "nav": [
+        "库存管理 01"
+      ],
+      "columns": [
+        "商品",
+        "实际库存",
+        "预留库存",
+        "可售库存",
+        "补货警戒值",
+        "库存状态",
+        "操作"
+      ],
+      "metrics": [
+        "库存商品",
+        "可售数量",
+        "需要补货"
+      ],
+      "values": [
+        "8",
+        "54",
+        "1"
+      ],
+      "metricsHidden": false,
+      "add": false,
+      "edit": false,
+      "adjust": true,
+      "newOrder": false,
+      "rows": 8,
+      "search": "",
+      "members": []
+    },
+    {
+      "name": "inventory-filter",
+      "status": "PASS",
+      "account": "inventory · 库存管理员",
+      "title": "库存管理",
+      "nav": [
+        "库存管理 01"
+      ],
+      "columns": [
+        "商品",
+        "实际库存",
+        "预留库存",
+        "可售库存",
+        "补货警戒值",
+        "库存状态",
+        "操作"
+      ],
+      "metrics": [
+        "库存商品",
+        "可售数量",
+        "需要补货"
+      ],
+      "values": [
+        "2",
+        "12",
+        "0"
+      ],
+      "metricsHidden": false,
+      "add": false,
+      "edit": false,
+      "adjust": true,
+      "newOrder": false,
+      "rows": 2,
+      "search": "DEMO",
+      "members": []
+    },
+    {
+      "status": "PASS",
+      "name": "open-cancel-dialog",
+      "title": "调整库存"
+    },
+    {
+      "name": "inventory",
+      "status": "PASS",
+      "account": "inventory · 库存管理员",
+      "title": "库存管理",
+      "nav": [
+        "库存管理 01"
+      ],
+      "columns": [
+        "商品",
+        "实际库存",
+        "预留库存",
+        "可售库存",
+        "补货警戒值",
+        "库存状态",
+        "操作"
+      ],
+      "metrics": [
+        "库存商品",
+        "可售数量",
+        "需要补货"
+      ],
+      "values": [
+        "8",
+        "54",
+        "1"
+      ],
+      "metricsHidden": false,
+      "add": false,
+      "edit": false,
+      "adjust": true,
+      "newOrder": false,
+      "rows": 8,
+      "search": "",
+      "members": []
+    },
+    {
+      "status": "PASS",
+      "name": "inventory-mobile-390px",
+      "width": 390,
+      "pageWidth": 390,
+      "table": 668,
+      "frame": 360,
+      "nav": 1
+    },
+    {
+      "name": "customer1-products",
+      "status": "PASS",
+      "account": "customer1 · 顾客",
+      "title": "商品目录",
+      "nav": [
+        "商品目录 01",
+        "我的订单 02"
+      ],
+      "columns": [
+        "商品",
+        "类别 / IP",
+        "售价",
+        "可售库存"
+      ],
+      "metrics": [],
+      "values": [
+        "8",
+        "8",
+        "54"
+      ],
+      "metricsHidden": true,
+      "add": false,
+      "edit": false,
+      "adjust": false,
+      "newOrder": false,
+      "rows": 8,
+      "search": "",
+      "members": []
+    },
+    {
+      "name": "customer1-orders",
+      "status": "PASS",
+      "account": "customer1 · 顾客",
+      "title": "我的订单",
+      "nav": [
+        "商品目录 01",
+        "我的订单 02"
+      ],
+      "columns": [
+        "订单编号",
+        "会员",
+        "状态",
+        "明细 / 金额",
+        "完成时间",
+        "操作"
+      ],
+      "metrics": [
+        "我的订单",
+        "进行中",
+        "已完成"
+      ],
+      "values": [
+        "4",
+        "1",
+        "3"
+      ],
+      "metricsHidden": false,
+      "add": false,
+      "edit": false,
+      "adjust": false,
+      "newOrder": false,
+      "rows": 4,
+      "search": "",
+      "members": [
+        "会员 #1",
+        "会员 #1",
+        "会员 #1",
+        "会员 #1"
+      ]
+    },
+    {
+      "name": "customer2-products",
+      "status": "PASS",
+      "account": "customer2 · 顾客",
+      "title": "商品目录",
+      "nav": [
+        "商品目录 01",
+        "我的订单 02"
+      ],
+      "columns": [
+        "商品",
+        "类别 / IP",
+        "售价",
+        "可售库存"
+      ],
+      "metrics": [],
+      "values": [
+        "8",
+        "8",
+        "54"
+      ],
+      "metricsHidden": true,
+      "add": false,
+      "edit": false,
+      "adjust": false,
+      "newOrder": false,
+      "rows": 8,
+      "search": "",
+      "members": []
+    },
+    {
+      "name": "customer2-orders",
+      "status": "PASS",
+      "account": "customer2 · 顾客",
+      "title": "我的订单",
+      "nav": [
+        "商品目录 01",
+        "我的订单 02"
+      ],
+      "columns": [
+        "订单编号",
+        "会员",
+        "状态",
+        "明细 / 金额",
+        "完成时间",
+        "操作"
+      ],
+      "metrics": [
+        "我的订单",
+        "进行中",
+        "已完成"
+      ],
+      "values": [
+        "1",
+        "0",
+        "1"
+      ],
+      "metricsHidden": false,
+      "add": false,
+      "edit": false,
+      "adjust": false,
+      "newOrder": false,
+      "rows": 1,
+      "search": "",
+      "members": [
+        "会员 #2"
+      ]
+    },
+    {
+      "name": "manager-products",
+      "status": "PASS",
+      "account": "manager · 店长 / 管理员",
+      "title": "商品管理",
+      "nav": [
+        "商品管理 01",
+        "库存管理 02",
+        "销售订单 03"
+      ],
+      "columns": [
+        "商品",
+        "类别 / IP",
+        "售价",
+        "上架状态",
+        "操作"
+      ],
+      "metrics": [
+        "商品数量",
+        "在售商品",
+        "非在售商品"
+      ],
+      "values": [
+        "8",
+        "8",
+        "0"
+      ],
+      "metricsHidden": false,
+      "add": true,
+      "edit": true,
+      "adjust": false,
+      "newOrder": false,
+      "rows": 8,
+      "search": "",
+      "members": []
+    },
+    {
+      "name": "manager-products",
+      "status": "PASS",
+      "account": "manager · 店长 / 管理员",
+      "title": "商品管理",
+      "nav": [
+        "商品管理 01",
+        "库存管理 02",
+        "销售订单 03"
+      ],
+      "columns": [
+        "商品",
+        "类别 / IP",
+        "售价",
+        "上架状态",
+        "操作"
+      ],
+      "metrics": [
+        "商品数量",
+        "在售商品",
+        "非在售商品"
+      ],
+      "values": [
+        "8",
+        "8",
+        "0"
+      ],
+      "metricsHidden": false,
+      "add": true,
+      "edit": true,
+      "adjust": false,
+      "newOrder": false,
+      "rows": 8,
+      "search": "",
+      "members": []
+    }
+  ],
+  "business_writes": 0
+}

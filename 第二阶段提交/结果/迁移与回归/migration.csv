@@ -1,0 +1,2 @@
+"status","target_database","purchase_rows","result"
+"PASS","AnimeGoodsStoreDB_Week6Target","3","新增活动唯一索引；替换类型关联和状态 CHECK；业务数据未改写"

@@ -100,6 +100,10 @@ class Repository:
                         "FROM dbo.SalesOrderItem i JOIN dbo.Product p ON p.product_id=i.product_id "
                         "WHERE order_id=%s ORDER BY i.product_id", (order_id,))
 
+    def item(self, order_id, product_id):
+        return self.one("SELECT unit_price FROM dbo.SalesOrderItem WHERE order_id=%s AND product_id=%s",
+                        (order_id, product_id))
+
     def create_order(self, member_id, cashier_id):
         order_id = self.one("SELECT NEXT VALUE FOR dbo.WebOrderSeq AS id")["id"]
         order_no = f"WEB{order_id:010d}"

@@ -172,10 +172,24 @@ class Services:
         qty = integer(data.get("quantity"), "购买数量", 1, 1000000)
         with self.connection(user) as repo:
             self.draft(repo, user, order_id)
-            product = repo.product(product_id)
+            product = repo.product(product_id, lock=True)
             if not product or product["product_status"] != "ON_SALE":
                 raise AppError("BUSINESS_RULE", "商品不存在或未上架", 409)
-            repo.set_item(order_id, product_id, qty, product["sale_price"])
+            existing = repo.item(order_id, product_id)
+            if existing:
+                price = existing["unit_price"]
+            else:
+                try:
+                    expected = Decimal(str(data.get("expected_unit_price")))
+                    if not expected.is_finite() or not Decimal("0.01") <= expected <= Decimal("99999999.99") or expected != expected.quantize(Decimal("0.01")):
+                        raise InvalidOperation
+                except (InvalidOperation, ValueError):
+                    raise AppError("INVALID_INPUT", "请先刷新商品目录并选择商品标价")
+                if expected != product["sale_price"]:
+                    raise AppError("PRICE_CHANGED", "商品标价已更新，请刷新目录并核对后重新登记", 409)
+                price = product["sale_price"]
+            # 订单锁串行化明细操作，已有行修改数量时始终保留登记单价。
+            repo.set_item(order_id, product_id, qty, price)
             return {}
 
     def delete_item(self, user, order_id, product_id):
@@ -200,7 +214,6 @@ class Services:
                 product = repo.product(item["product_id"], lock=True)
                 if not product or product["product_status"] != "ON_SALE":
                     raise AppError("BUSINESS_RULE", "订单内有商品已停售，请调整草稿", 409)
-                repo.set_item(order_id, item["product_id"], item["quantity"], product["sale_price"])
                 if repo.take_stock(item["product_id"], item["quantity"]) != 1:
                     raise AppError("INSUFFICIENT_STOCK", "可售库存不足，订单未结账，请调整数量", 409)
             repo.complete_order(order_id)

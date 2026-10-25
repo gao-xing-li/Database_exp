@@ -1,0 +1,2 @@
+# 仅 Windows 身份初始化需要；先安装 requirements.txt。
+pyodbc==5.3.0

@@ -1,0 +1,15 @@
+{
+  "server": "127.0.0.1",
+  "port": 14333,
+  "database": "AnimeGoodsStoreDB_Week6App",
+  "secret_key": "REPLACE_WITH_RANDOM_SECRET_AT_LEAST_32_CHARACTERS",
+  "cookie_secure": false,
+  "log_file": "results/app.local.jsonl",
+  "accounts": {
+    "auth": {"user": "course_auth", "password": "REPLACE"},
+    "manager": {"user": "course_manager", "password": "REPLACE"},
+    "clerk": {"user": "course_clerk", "password": "REPLACE"},
+    "inventory": {"user": "course_inventory", "password": "REPLACE"},
+    "customer": {"user": "course_customer", "password": "REPLACE"}
+  }
+}

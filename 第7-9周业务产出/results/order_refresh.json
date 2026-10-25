@@ -1,0 +1,62 @@
+{
+  "checked_at": "2026-10-24T23:16:31.5606501+08:00",
+  "status": "PASS",
+  "business_writes": 0,
+  "checks": [
+    {
+      "status": "PASS",
+      "name": "staff-active-order-refresh",
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/api/orders"
+        },
+        {
+          "method": "GET",
+          "path": "/api/products"
+        },
+        {
+          "method": "GET",
+          "path": "/api/orders/10017"
+        }
+      ],
+      "selected_order_preserved": true,
+      "notice": "订单及可选商品的价格、库存已更新。",
+      "business_writes": 0
+    },
+    {
+      "status": "PASS",
+      "name": "staff-list-refresh",
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/api/orders"
+        },
+        {
+          "method": "GET",
+          "path": "/api/products"
+        }
+      ],
+      "selected_order_preserved": false,
+      "notice": "订单及可选商品的价格、库存已更新。",
+      "business_writes": 0
+    },
+    {
+      "status": "PASS",
+      "name": "customer-active-order-refresh",
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/api/orders"
+        },
+        {
+          "method": "GET",
+          "path": "/api/orders/10017"
+        }
+      ],
+      "selected_order_preserved": true,
+      "notice": "订单信息已更新。",
+      "business_writes": 0
+    }
+  ]
+}

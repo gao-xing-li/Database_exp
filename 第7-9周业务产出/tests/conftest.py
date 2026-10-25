@@ -66,7 +66,9 @@ def business(app, clients):
         order_id=clerk.ok("POST","/orders",{"member_id":member_id})["order_id"]
         orders.append(order_id)
         for product_id,quantity in items:
-            clerk.ok("PUT",f"/orders/{order_id}/items/{product_id}",{"quantity":quantity})
+            catalog=clerk.ok("GET","/products")
+            displayed=next(p["sale_price"] for p in catalog if p["product_id"]==product_id)
+            clerk.ok("PUT",f"/orders/{order_id}/items/{product_id}",{"quantity":quantity,"expected_unit_price":displayed})
         return order_id
     def stock(product_id):
         with app.extensions["services"].db.transaction("manager") as r:
