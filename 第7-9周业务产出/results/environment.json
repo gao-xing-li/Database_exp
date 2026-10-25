@@ -1,0 +1,11 @@
+{
+  "sql_version": "16.0.4305.5",
+  "edition": "Developer Edition (64-bit)",
+  "database_name": "AnimeGoodsStoreDB_Week6App",
+  "runtime_user": "course_manager",
+  "recorded_at_utc": "2026-10-23T09:10:19.488970+00:00",
+  "python": "3.12.14",
+  "web": "Flask 3.1.2 / waitress 3.0.2",
+  "driver": "pymssql 2.3.11",
+  "sql_business_timezone": "UTC+08:00"
+}
