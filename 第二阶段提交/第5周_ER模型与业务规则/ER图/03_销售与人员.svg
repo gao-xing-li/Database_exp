@@ -1,0 +1,119 @@
+<?xml version='1.0' encoding='utf-8'?>
+<svg xmlns="http://www.w3.org/2000/svg" width="2848.0" height="2192.0" viewBox="0 0 2848.0 2192.0">
+<style>text{font-family:"Microsoft YaHei",Arial,sans-serif}</style>
+<rect width="100%" height="100%" fill="white" />
+<polyline points="360.0,561.6 360.0,744.8" fill="none" stroke="#73849a" stroke-width="2" />
+<polyline points="360.0,888.8 360.0,1072.0" fill="none" stroke="#73849a" stroke-width="2" />
+<polyline points="1360.0,641.6 1360.0,784.8" fill="none" stroke="#73849a" stroke-width="2" />
+<polyline points="1360.0,928.8 1360.0,1072.0" fill="none" stroke="#73849a" stroke-width="2" />
+<polyline points="672.0,1264.0 762.0,1264.0" fill="none" stroke="#73849a" stroke-width="2" />
+<polyline points="982.0,1264.0 1072.0,1264.0" fill="none" stroke="#73849a" stroke-width="2" />
+<polyline points="1696.0,1344.0 1762.0,1344.0" fill="none" stroke="#73849a" stroke-width="2" />
+<polyline points="1982.0,1344.0 2048.0,1344.0" fill="none" stroke="#73849a" stroke-width="2" />
+<polyline points="2336.0,801.6 2336.0,920.8" fill="none" stroke="#73849a" stroke-width="2" />
+<polyline points="2336.0,1064.8 2336.0,1184.0" fill="none" stroke="#73849a" stroke-width="2" />
+<rect x="96.0" y="320.0" width="528.0" height="241.60000000000002" fill="#ffffff" stroke="#33465e" stroke-width="1.5" />
+<rect x="96.0" y="320.0" width="528.0" height="96.0" fill="#e5f4f1" stroke="#33465e" stroke-width="1.5" />
+<rect x="96.0" y="1072.0" width="576.0" height="321.6" fill="#ffffff" stroke="#33465e" stroke-width="1.5" />
+<rect x="96.0" y="1072.0" width="576.0" height="96.0" fill="#e5f4f1" stroke="#33465e" stroke-width="1.5" />
+<rect x="1072.0" y="320.0" width="576.0" height="321.6" fill="#ffffff" stroke="#33465e" stroke-width="1.5" />
+<rect x="1072.0" y="320.0" width="576.0" height="96.0" fill="#e5f4f1" stroke="#33465e" stroke-width="1.5" />
+<rect x="1072.0" y="1072.0" width="624.0" height="481.6" fill="#ffffff" stroke="#33465e" stroke-width="1.5" />
+<rect x="1072.0" y="1072.0" width="624.0" height="96.0" fill="#eee9f8" stroke="#33465e" stroke-width="1.5" />
+<rect x="2048.0" y="320.0" width="624.0" height="481.6" fill="#ffffff" stroke="#33465e" stroke-width="1.5" />
+<rect x="2048.0" y="320.0" width="624.0" height="96.0" fill="#e7f0fb" stroke="#33465e" stroke-width="1.5" />
+<rect x="2048.0" y="1184.0" width="576.0" height="281.6" fill="#ffffff" stroke="#33465e" stroke-width="1.5" />
+<rect x="2048.0" y="1184.0" width="576.0" height="96.0" fill="#eee9f8" stroke="#33465e" stroke-width="1.5" />
+<rect x="96.0" y="1712.0" width="2656.0" height="424.0" fill="#f6f8fb" stroke="#c4ceda" stroke-width="1.5" />
+<polygon points="360.0,744.8 470.0,816.8 360.0,888.8 250.0,816.8" fill="white" stroke="#73849a" stroke-width="2" />
+<polygon points="1360.0,784.8 1470.0,856.8 1360.0,928.8 1250.0,856.8" fill="white" stroke="#73849a" stroke-width="2" />
+<polygon points="872.0,1192.0 982.0,1264.0 872.0,1336.0 762.0,1264.0" fill="white" stroke="#73849a" stroke-width="2" />
+<polygon points="1872.0,1272.0 1982.0,1344.0 1872.0,1416.0 1762.0,1344.0" fill="white" stroke="#73849a" stroke-width="2" />
+<polygon points="2336.0,920.8 2446.0,992.8 2336.0,1064.8 2226.0,992.8" fill="white" stroke="#73849a" stroke-width="2" />
+<text x="96.0" y="84.80000000000001" dominant-baseline="central" text-anchor="start" font-size="45.0" fill="#22334a" font-weight="700" text-decoration="none">销售订单、明细与人员</text>
+<text x="96.0" y="160.8" dominant-baseline="central" text-anchor="start" font-size="25.0" fill="#22334a" font-weight="400" text-decoration="none">第五周业务模型 · 属性沿用 v0.1 · R 编号对应规则清单 · Δ 为已确认但尚未完整落实的新要求</text>
+<text x="96.0" y="220.0" dominant-baseline="central" text-anchor="start" font-size="24.0" fill="#52647b" font-weight="400" text-decoration="none">菱形表示联系；实体旁 min..max 表示本端每个实体参与联系的次数（与原 UML 端点读法不同）。</text>
+<text x="360.0" y="345.59999999999997" dominant-baseline="central" text-anchor="middle" font-size="27.0" fill="#22334a" font-weight="700" text-decoration="none">员工业务角色</text>
+<text x="360.0" y="388.0" dominant-baseline="central" text-anchor="middle" font-size="28.0" fill="#22334a" font-weight="700" text-decoration="none">BusinessRole</text>
+<text x="120.0" y="444.0" dominant-baseline="central" text-anchor="start" font-size="25.0" fill="#22334a" font-weight="400" text-decoration="underline">role_id</text>
+<text x="120.0" y="484.0" dominant-baseline="central" text-anchor="start" font-size="25.0" fill="#22334a" font-weight="400" text-decoration="none">[AK] role_name</text>
+<text x="120.0" y="524.0" dominant-baseline="central" text-anchor="start" font-size="25.0" fill="#22334a" font-weight="400" text-decoration="none">description?</text>
+<text x="384.0" y="1097.6000000000001" dominant-baseline="central" text-anchor="middle" font-size="27.0" fill="#22334a" font-weight="700" text-decoration="none">员工</text>
+<text x="384.0" y="1140.0" dominant-baseline="central" text-anchor="middle" font-size="28.0" fill="#22334a" font-weight="700" text-decoration="none">Employee</text>
+<text x="120.0" y="1196.0" dominant-baseline="central" text-anchor="start" font-size="25.0" fill="#22334a" font-weight="400" text-decoration="underline">employee_id</text>
+<text x="120.0" y="1236.0" dominant-baseline="central" text-anchor="start" font-size="25.0" fill="#22334a" font-weight="400" text-decoration="none">[AK] employee_no</text>
+<text x="120.0" y="1276.0" dominant-baseline="central" text-anchor="start" font-size="25.0" fill="#22334a" font-weight="400" text-decoration="none">employee_name</text>
+<text x="120.0" y="1316.0" dominant-baseline="central" text-anchor="start" font-size="25.0" fill="#22334a" font-weight="400" text-decoration="none">role_id</text>
+<text x="120.0" y="1356.0" dominant-baseline="central" text-anchor="start" font-size="25.0" fill="#22334a" font-weight="400" text-decoration="none">employee_status</text>
+<text x="1360.0" y="345.59999999999997" dominant-baseline="central" text-anchor="middle" font-size="27.0" fill="#22334a" font-weight="700" text-decoration="none">会员</text>
+<text x="1360.0" y="388.0" dominant-baseline="central" text-anchor="middle" font-size="28.0" fill="#22334a" font-weight="700" text-decoration="none">Member</text>
+<text x="1096.0" y="444.0" dominant-baseline="central" text-anchor="start" font-size="25.0" fill="#22334a" font-weight="400" text-decoration="underline">member_id</text>
+<text x="1096.0" y="484.0" dominant-baseline="central" text-anchor="start" font-size="25.0" fill="#22334a" font-weight="400" text-decoration="none">[AK] member_no</text>
+<text x="1096.0" y="524.0" dominant-baseline="central" text-anchor="start" font-size="25.0" fill="#22334a" font-weight="400" text-decoration="none">member_name</text>
+<text x="1096.0" y="564.0" dominant-baseline="central" text-anchor="start" font-size="25.0" fill="#22334a" font-weight="400" text-decoration="none">[AK] phone</text>
+<text x="1096.0" y="604.0" dominant-baseline="central" text-anchor="start" font-size="25.0" fill="#22334a" font-weight="400" text-decoration="none">member_status</text>
+<text x="1384.0" y="1097.6000000000001" dominant-baseline="central" text-anchor="middle" font-size="27.0" fill="#22334a" font-weight="700" text-decoration="none">销售订单</text>
+<text x="1384.0" y="1140.0" dominant-baseline="central" text-anchor="middle" font-size="28.0" fill="#22334a" font-weight="700" text-decoration="none">SalesOrder</text>
+<text x="1096.0" y="1196.0" dominant-baseline="central" text-anchor="start" font-size="25.0" fill="#22334a" font-weight="400" text-decoration="underline">order_id</text>
+<text x="1096.0" y="1236.0" dominant-baseline="central" text-anchor="start" font-size="25.0" fill="#22334a" font-weight="400" text-decoration="none">[AK] order_no</text>
+<text x="1096.0" y="1276.0" dominant-baseline="central" text-anchor="start" font-size="25.0" fill="#22334a" font-weight="400" text-decoration="none">order_type</text>
+<text x="1096.0" y="1316.0" dominant-baseline="central" text-anchor="start" font-size="25.0" fill="#22334a" font-weight="400" text-decoration="none">member_id?</text>
+<text x="1096.0" y="1356.0" dominant-baseline="central" text-anchor="start" font-size="25.0" fill="#22334a" font-weight="400" text-decoration="none">cashier_id</text>
+<text x="1096.0" y="1396.0" dominant-baseline="central" text-anchor="start" font-size="25.0" fill="#22334a" font-weight="400" text-decoration="none">reservation_id?</text>
+<text x="1096.0" y="1436.0" dominant-baseline="central" text-anchor="start" font-size="25.0" fill="#22334a" font-weight="400" text-decoration="none">order_time?</text>
+<text x="1096.0" y="1476.0" dominant-baseline="central" text-anchor="start" font-size="25.0" fill="#22334a" font-weight="400" text-decoration="none">order_status</text>
+<text x="1096.0" y="1516.0" dominant-baseline="central" text-anchor="start" font-size="25.0" fill="#52647b" font-weight="400" text-decoration="none">/total_amount</text>
+<text x="2360.0" y="345.59999999999997" dominant-baseline="central" text-anchor="middle" font-size="27.0" fill="#22334a" font-weight="700" text-decoration="none">商品</text>
+<text x="2360.0" y="388.0" dominant-baseline="central" text-anchor="middle" font-size="28.0" fill="#22334a" font-weight="700" text-decoration="none">Product</text>
+<text x="2072.0" y="444.0" dominant-baseline="central" text-anchor="start" font-size="25.0" fill="#22334a" font-weight="400" text-decoration="underline">product_id</text>
+<text x="2072.0" y="484.0" dominant-baseline="central" text-anchor="start" font-size="25.0" fill="#22334a" font-weight="400" text-decoration="none">[AK] product_code</text>
+<text x="2072.0" y="524.0" dominant-baseline="central" text-anchor="start" font-size="25.0" fill="#22334a" font-weight="400" text-decoration="none">product_name</text>
+<text x="2072.0" y="564.0" dominant-baseline="central" text-anchor="start" font-size="25.0" fill="#22334a" font-weight="400" text-decoration="none">category_id</text>
+<text x="2072.0" y="604.0" dominant-baseline="central" text-anchor="start" font-size="25.0" fill="#22334a" font-weight="400" text-decoration="none">ip_id?</text>
+<text x="2072.0" y="644.0" dominant-baseline="central" text-anchor="start" font-size="25.0" fill="#22334a" font-weight="400" text-decoration="none">character_id?</text>
+<text x="2072.0" y="684.0" dominant-baseline="central" text-anchor="start" font-size="25.0" fill="#22334a" font-weight="400" text-decoration="none">sale_price</text>
+<text x="2072.0" y="724.0" dominant-baseline="central" text-anchor="start" font-size="25.0" fill="#22334a" font-weight="400" text-decoration="none">product_status</text>
+<text x="2072.0" y="764.0" dominant-baseline="central" text-anchor="start" font-size="25.0" fill="#22334a" font-weight="400" text-decoration="none">created_at</text>
+<text x="2336.0" y="1209.6000000000001" dominant-baseline="central" text-anchor="middle" font-size="27.0" fill="#22334a" font-weight="700" text-decoration="none">销售明细</text>
+<text x="2336.0" y="1252.0" dominant-baseline="central" text-anchor="middle" font-size="28.0" fill="#22334a" font-weight="700" text-decoration="none">SalesOrderItem</text>
+<text x="2072.0" y="1308.0" dominant-baseline="central" text-anchor="start" font-size="25.0" fill="#22334a" font-weight="400" text-decoration="underline">order_id</text>
+<text x="2072.0" y="1348.0" dominant-baseline="central" text-anchor="start" font-size="25.0" fill="#22334a" font-weight="400" text-decoration="underline">product_id</text>
+<text x="2072.0" y="1388.0" dominant-baseline="central" text-anchor="start" font-size="25.0" fill="#22334a" font-weight="400" text-decoration="none">quantity</text>
+<text x="2072.0" y="1428.0" dominant-baseline="central" text-anchor="start" font-size="25.0" fill="#22334a" font-weight="400" text-decoration="none">unit_price</text>
+<text x="128.0" y="1752.0000000000002" dominant-baseline="central" text-anchor="start" font-size="24.0" fill="#22334a" font-weight="400" text-decoration="none">图例：矩形为实体，菱形为联系；下划线为主码（多项合为联合主码）；AK / 同组 AK1 为候选码辅助标记。</text>
+<text x="128.0" y="1800.0000000000002" dominant-baseline="central" text-anchor="start" font-size="24.0" fill="#22334a" font-weight="400" text-decoration="none">? 为原字段可空；/ 为派生属性；本端参与次数：1..1 恰好一次，0..1 可选一次，0..* 可选多次，1..* 至少一次。</text>
+<text x="128.0" y="1848.0000000000002" dominant-baseline="central" text-anchor="start" font-size="24.0" fill="#22334a" font-weight="400" text-decoration="none">N 为条件附注；Δ1 / Δ2 为本次收紧要求，v0.1 尚未完整实现。其他流程缺口见规则映射清单。</text>
+<text x="128.0" y="1920.0" dominant-baseline="central" text-anchor="start" font-size="24.0" fill="#34485e" font-weight="400" text-decoration="none">N03  创建订单可无明细；完成时至少一条；完成后固定交易内容。</text>
+<text x="128.0" y="1972.8" dominant-baseline="central" text-anchor="start" font-size="24.0" fill="#34485e" font-weight="400" text-decoration="none">N04  SPOT 可无会员且不关联预订；PRESALE 必须关联同会员预订，整体提货。</text>
+<text x="128.0" y="2025.6000000000001" dominant-baseline="central" text-anchor="start" font-size="24.0" fill="#34485e" font-weight="400" text-decoration="none">N08  员工联系分别表示收银、创建或验收；外键存在不等于业务职责正确。</text>
+<text x="360.0" y="804.1999999999999" dominant-baseline="central" text-anchor="middle" font-size="21.0" fill="#22334a" font-weight="400" text-decoration="none">R06</text>
+<text x="360.0" y="829.4" dominant-baseline="central" text-anchor="middle" font-size="21.0" fill="#22334a" font-weight="400" text-decoration="none">承担职责</text>
+<rect x="368.0" y="588.6" width="68.0" height="30.0" fill="white" />
+<text x="402.0" y="603.6" dominant-baseline="central" text-anchor="middle" font-size="23.0" fill="#22334a" font-weight="400" text-decoration="none">0..*</text>
+<rect x="368.0" y="1015.0" width="68.0" height="30.0" fill="white" />
+<text x="402.0" y="1030.0" dominant-baseline="central" text-anchor="middle" font-size="23.0" fill="#22334a" font-weight="400" text-decoration="none">1..1</text>
+<text x="1360.0" y="844.1999999999999" dominant-baseline="central" text-anchor="middle" font-size="21.0" fill="#22334a" font-weight="400" text-decoration="none">R07</text>
+<text x="1360.0" y="869.4" dominant-baseline="central" text-anchor="middle" font-size="21.0" fill="#22334a" font-weight="400" text-decoration="none">购买</text>
+<rect x="1368.0" y="668.6" width="68.0" height="30.0" fill="white" />
+<text x="1402.0" y="683.6" dominant-baseline="central" text-anchor="middle" font-size="23.0" fill="#22334a" font-weight="400" text-decoration="none">0..*</text>
+<rect x="1368.0" y="1015.0" width="68.0" height="30.0" fill="white" />
+<text x="1402.0" y="1030.0" dominant-baseline="central" text-anchor="middle" font-size="23.0" fill="#22334a" font-weight="400" text-decoration="none">0..1</text>
+<text x="872.0" y="1251.4" dominant-baseline="central" text-anchor="middle" font-size="21.0" fill="#22334a" font-weight="400" text-decoration="none">R08</text>
+<text x="872.0" y="1276.6000000000001" dominant-baseline="central" text-anchor="middle" font-size="21.0" fill="#22334a" font-weight="400" text-decoration="none">收银</text>
+<rect x="680.0" y="1204.0" width="68.0" height="30.0" fill="white" />
+<text x="714.0" y="1219.0" dominant-baseline="central" text-anchor="middle" font-size="23.0" fill="#22334a" font-weight="400" text-decoration="none">0..*</text>
+<rect x="996.0" y="1204.0" width="68.0" height="30.0" fill="white" />
+<text x="1030.0" y="1219.0" dominant-baseline="central" text-anchor="middle" font-size="23.0" fill="#22334a" font-weight="400" text-decoration="none">1..1</text>
+<text x="1872.0" y="1331.4" dominant-baseline="central" text-anchor="middle" font-size="21.0" fill="#22334a" font-weight="400" text-decoration="none">R09</text>
+<text x="1872.0" y="1356.6000000000001" dominant-baseline="central" text-anchor="middle" font-size="21.0" fill="#22334a" font-weight="400" text-decoration="none">包含明细</text>
+<rect x="1704.0" y="1284.0" width="68.0" height="30.0" fill="white" />
+<text x="1738.0" y="1299.0" dominant-baseline="central" text-anchor="middle" font-size="23.0" fill="#22334a" font-weight="400" text-decoration="none">0..*</text>
+<rect x="1972.0" y="1284.0" width="68.0" height="30.0" fill="white" />
+<text x="2006.0" y="1299.0" dominant-baseline="central" text-anchor="middle" font-size="23.0" fill="#22334a" font-weight="400" text-decoration="none">1..1</text>
+<text x="2336.0" y="980.1999999999999" dominant-baseline="central" text-anchor="middle" font-size="21.0" fill="#22334a" font-weight="400" text-decoration="none">R10</text>
+<text x="2336.0" y="1005.4" dominant-baseline="central" text-anchor="middle" font-size="21.0" fill="#22334a" font-weight="400" text-decoration="none">被购买</text>
+<rect x="2344.0" y="828.6" width="68.0" height="30.0" fill="white" />
+<text x="2378.0" y="843.6" dominant-baseline="central" text-anchor="middle" font-size="23.0" fill="#22334a" font-weight="400" text-decoration="none">0..*</text>
+<rect x="2344.0" y="1127.0" width="68.0" height="30.0" fill="white" />
+<text x="2378.0" y="1142.0" dominant-baseline="central" text-anchor="middle" font-size="23.0" fill="#22334a" font-weight="400" text-decoration="none">1..1</text>
+</svg>

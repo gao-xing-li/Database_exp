@@ -2,17 +2,16 @@
 
 项目为二次元周边商品店数据库应用v1.0，使用Flask与SQL Server。已实现商品、库存、草稿订单与明细的查询和维护、现货结账、四类角色权限和顾客本人订单查询。完整预售履约与采购验收界面尚未实现。
 
-## 提交内容
+## 按周查阅
 
-| 指导书要求 | 文件位置 |
-| --- | --- |
-| ER模型、规则与原结构问题 | [ER图](结果/ER图/01_总图.png)，[实体说明](结果/设计分析/01_实体与设计说明.md)，[业务规则](结果/设计分析/02_业务规则与映射清单.md)，[问题清单](结果/设计分析/03_v0.1问题清单.md) |
-| 依赖、更新异常、范式与分解方案 | [依赖与范式分析](结果/设计分析/01_依赖与范式分析.md)，[重构与数据字典](结果/设计分析/02_重构方案与数据字典.md) |
-| 数据库迁移与回归代码 | [migration.sql](代码/第六周业务产出/migration.sql)，[regression.sql](代码/第六周业务产出/regression.sql) |
-| Web代码和应用测试 | [应用入口](代码/web/run.py)，代码/web/app，代码/web/tests，代码/web/scripts |
-| 迁移前后关键查询与测试结果 | 结果/迁移与回归，结果/应用测试 |
-| 不同角色的完整流程与异常结果 | 结果/角色流程，[阶段报告](阶段报告.pdf) |
-| 阶段报告、AI记录与分工 | [阶段报告](阶段报告.pdf)，[ai_log](ai_log.md)，[小组分工](小组分工.md) |
+| 周次 | 主要内容 | 入口 |
+| --- | --- | --- |
+| 第5周 | 完整设计与决策，实体与规则说明，v0.1问题清单，可编辑ER源文件及导出图，只读验证与记录，ai_log | [第5周_ER模型与业务规则](第5周_ER模型与业务规则/README.md) |
+| 第6周 | 完整设计与决策，函数依赖和范式分析，重构与字典，更新后的ER源图，迁移和回归脚本，原始对照结果，报告素材，ai_log | [第6周_函数依赖规范化与迁移](第6周_函数依赖规范化与迁移/README.md) |
+| 第7—9周 | Web源代码，架构与操作手册，角色与事务，集成测试，浏览器验证和角色截图 | [第7-9周_Web应用与集成测试](第7-9周_Web应用与集成测试/README.md) |
+| 阶段汇总 | 第5—9周报告，AI辅助记录及分工 | [第5-9周_阶段报告.pdf](第5-9周_阶段报告.pdf)，[ai_log.md](ai_log.md)，[第5-9周_小组分工.md](第5-9周_小组分工.md) |
+
+每周独立保留自己的设计材料、结果和说明。第5周图表达原始检查结果，第6周图记录迁移后的规则落实情况，可按各周目录分别对照。第7—9周按指导书联合验收，源码保持一套完整应用。
 
 ## 设计说明
 
@@ -22,22 +21,31 @@
 
 ## 运行环境与项目结构
 
-使用Python 3.12、SQL Server和Conda，依赖版本见代码/web/requirements.txt。Windows集成身份初始化另需ODBC Driver 18及requirements-windows.txt。网页运行使用pymssql与受限SQL账户。
+使用Python 3.12、SQL Server和Conda，依赖版本见第7-9周_Web应用与集成测试/代码/web/requirements.txt。Windows集成身份初始化另需ODBC Driver 18及requirements-windows.txt。网页运行使用pymssql与受限SQL账户。
 
 ```text
-代码/
-  web/
-    app/templates、app/static    页面、表单与API调用
-    app/__init__.py             路由、会话、CSRF及统一异常
-    app/services.py             权限、规则和业务事务
-    app/db.py、repository.py    连接、提交回滚和参数化SQL
-    sql/                       认证、角色与顾客行级安全
-    scripts/                   初始化、辅助操作及浏览器测试
-    tests/                     应用集成与辅助脚本测试
-  第1-4周业务产出/               初始化必需的7个基础SQL
-  第六周业务产出/                迁移与回归SQL
-结果/
-  ER图、设计分析、迁移与回归、应用测试、角色流程
+第二阶段提交/
+  README.md
+  第5-9周_阶段报告.pdf
+  第5-9周_小组分工.md
+  ai_log.md
+  第5周_ER模型与业务规则/
+    第五周 设计与决策.md
+    01_实体与设计说明.md、02_业务规则与映射清单.md、03_v0.1问题清单.md
+    04_只读验证.sql、05_验证记录.md、ai_log.md
+    ER图/  可编辑drawio与PNG、SVG
+  第6周_函数依赖规范化与迁移/
+    第六周 设计与决策.md
+    01_依赖与范式分析.md、02_重构方案与数据字典.md
+    migration.sql、regression.sql、03_迁移与回归验证记录.md
+    04_报告素材.md、ai_log.md、ER图/、results/
+  第7-9周_Web应用与集成测试/
+    第7-9周 设计与决策.md
+    01_架构与接口.md、02_操作手册.md、03_测试与验证记录.md
+    代码/web/  app、sql、scripts、tests与依赖清单
+    代码/第1-4周业务产出/  初始化必需的基础SQL
+    代码/第六周业务产出/migration.sql  初始化依赖副本
+    测试结果/、截图_角色流程/
 ```
 
 ## 从空环境复现
@@ -49,7 +57,7 @@
 ```powershell
 conda create --prefix ./.conda-env python=3.12 pip -y
 conda activate ./.conda-env
-Set-Location './代码/web'
+Set-Location './第7-9周_Web应用与集成测试/代码/web'
 python -m pip install -r requirements.txt -r requirements-windows.txt
 $env:DB_ADMIN_TRUSTED = '1'
 $env:DB_SERVER = '127.0.0.1'
@@ -62,7 +70,7 @@ python run.py
 
 初始化在独立库AnimeGoodsStoreDB_Week6App中顺序执行基础01—07、第六周migration.sql与Web安全脚本，生成本机config.local.json及受限账户。基础SQL是复现依赖，因此随代码保留，未附第一阶段旧报告与无关材料。已有库或配置时脚本停止，不自动清空，已有环境直接启动即可。
 
-浏览器打开 http://127.0.0.1:5000，登录manager、clerk、inventory、customer1或customer2，密码为初始化时自行设置的值。停止服务使用Ctrl+C。再次运行时进入代码/web，激活原环境并执行python run.py，不重新初始化。
+浏览器打开 http://127.0.0.1:5000，登录manager、clerk、inventory、customer1或customer2，密码为初始化时自行设置的值。停止服务使用Ctrl+C。再次运行时进入第7-9周_Web应用与集成测试/代码/web，激活原环境并执行python run.py，不重新初始化。
 
 ## 角色操作手册
 
@@ -80,11 +88,11 @@ python run.py
 
 ## 测试与结果
 
-第六周回归45项通过，迁移前后6笔固定订单合计530元，6件商品可售库存合计42，完整查询和正反例见结果/迁移与回归。复现迁移回归时，在同一SQL实例用SSMS新建AnimeGoodsStoreDB_Week6Baseline和AnimeGoodsStoreDB_Week6Target。分别对基础01—07脚本的执行副本替换库名后装载，两库先保持同一v0.1基线，仅在Target执行migration.sql，再在Target执行regression.sql。脚本中的BaselineDatabase应与实际基线库名一致，不在有人工演示数据的应用库中直接当作初始化执行。
+第六周回归45项通过，迁移前后6笔固定订单合计530元，6件商品可售库存合计42，完整查询和正反例见第6周_函数依赖规范化与迁移/results。复现迁移回归时，在同一SQL实例用SSMS新建AnimeGoodsStoreDB_Week6Baseline和AnimeGoodsStoreDB_Week6Target。分别对基础01—07脚本的执行副本替换库名后装载，两库先保持同一v0.1基线，仅在Target执行migration.sql，再在Target执行regression.sql。脚本中的BaselineDatabase应与实际基线库名一致，不在有人工演示数据的应用库中直接当作初始化执行。
 
-本机pytest共48项通过，其中42项连接真实SQL Server的应用集成测试，6项为密码重设辅助测试，原始JUnit结果见结果/应用测试/pytest.xml。api_examples.json保留前期自动验证的正常与错误API响应，人工截图采用本机实际操作，两者的样例值可以不同。
+本机pytest共48项通过，其中42项连接真实SQL Server的应用集成测试，6项为密码重设辅助测试，原始JUnit结果见第7-9周_Web应用与集成测试/测试结果/pytest.xml。api_examples.json保留前期自动验证的正常与错误API响应，人工截图采用本机实际操作，两者的样例值可以不同。
 
-在代码/web中设置初始化时的COURSE_DEMO_PASSWORD后运行以下命令。使用专用样例环境，测试时暂停人工操作。
+在第7-9周_Web应用与集成测试/代码/web中设置初始化时的COURSE_DEMO_PASSWORD后运行以下命令。使用专用样例环境，测试时暂停人工操作。
 
 ```powershell
 python -m pytest -q --junitxml=results/pytest.xml
@@ -92,8 +100,8 @@ python -m pytest -q --junitxml=results/pytest.xml
 
 测试覆盖输入、未登录、越权、SQL受限账户、顾客隔离、约束冲突、连接失败、完整回滚与并发不超卖。可选浏览器测试先安装requirements-browser.txt和Chromium，保持服务运行，再执行scripts/browser_smoke.py。测试记录使用独立数据并清理，序列编号消耗不回退。
 
-各角色界面修订另有21项真实浏览器检查通过，结果见 [角色页面检查](结果/应用测试/role_views.json)，覆盖五个账号的菜单、字段、按钮、页面统计、独立搜索、刷新、弹窗、会员订单范围与移动布局。该轮只查询并打开、取消弹窗，没有业务写入，与完整pytest及浏览器业务流程分别记录。
+各角色界面修订另有21项真实浏览器检查通过，结果见 [角色页面检查](第7-9周_Web应用与集成测试/测试结果/role_views.json)，覆盖五个账号的菜单、字段、按钮、页面统计、独立搜索、刷新、弹窗、会员订单范围与移动布局。该轮只查询并打开、取消弹窗，没有业务写入，与完整pytest及浏览器业务流程分别记录。
 
-订单刷新另有3项真实浏览器检查通过，见 [刷新检查](结果/应用测试/order_refresh.json)，该轮只进行了查询，没有业务写入。
+订单刷新另有3项真实浏览器检查通过，见 [刷新检查](第7-9周_Web应用与集成测试/测试结果/order_refresh.json)，该轮只进行了查询，没有业务写入。
 
-最新完整浏览器7组流程通过，结果见 [标价与收银验证](结果/应用测试/browser_price_lock.json)。商品按25元登记后目录调为30元，刷新与修改数量仍按25元，两件结账50元。48项测试同时覆盖过期标价登记拒绝、草稿锁价、库存回滚与权限。临时数据清理后，原演示商品、库存、订单和明细与测试前逐行哈希一致。提交的pytest.xml为最新48项通过结果。
+最新完整浏览器7组流程通过，结果见 [标价与收银验证](第7-9周_Web应用与集成测试/测试结果/browser_price_lock.json)。商品按25元登记后目录调为30元，刷新与修改数量仍按25元，两件结账50元。48项测试同时覆盖过期标价登记拒绝、草稿锁价、库存回滚与权限。临时数据清理后，原演示商品、库存、订单和明细与测试前逐行哈希一致。提交的pytest.xml为最新48项通过结果。
