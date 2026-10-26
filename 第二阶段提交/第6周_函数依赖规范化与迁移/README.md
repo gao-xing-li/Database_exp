@@ -1,84 +1,87 @@
-> 本目录保留第六周完整设计、更新后的ER源图与导出图、迁移回归脚本、结果和报告素材。下文现场实例与路径属于当时记录，复现时使用自己的独立SQL Server样例库。基础SQL位于[第7—9周运行依赖](../第7-9周_Web应用与集成测试/代码/第1-4周业务产出/01_create_tables.sql)所在目录。
+# 第6周：函数依赖、规范化与迁移验收
 
-# 第六周业务产出
+本周从v0.1结构出发，完成15张表的依赖、更新异常与范式分析，保留96个字段，说明保留与调整的依据，并在保留数据的目标副本上落实三项采购限制。验收包括理论论证、目标模式、实际迁移和前后回归四部分。
 
-本周完成 15 张表的依赖、更新异常与范式分析，保留全部 96 个字段，并在 SQL Server 隔离副本上实施三项采购限制：非空活动关联唯一、采购类型与活动关联一致、移除部分到货状态。
+单独验收只需要本目录与提交根目录的[第1—4周建库代码](../第1-4周_建库代码/README.md)。本周自行建立Baseline和Target，不依赖助教已执行第5周查询，不需要Web环境，也不使用第7—9周人工演示数据。
 
-**实测：迁移成功，45 项回归全部 PASS，三类迁移冲突均被预期拒绝，已迁移副本再次执行被阻止。** 环境与结果解释见 [验证记录](03_迁移与回归验证记录.md)。第六周数据库成果已形成，完整 Web 应用仍属第 7—9 周任务。
+## 交付与验收对照
 
-## 阅读顺序
+| 本周内容 | 交付文件 | 验收时检查什么 |
+| --- | --- | --- |
+| 设计与取舍 | [第六周 设计与决策.md](第六周%20设计与决策.md) | 本周承接的问题、调整范围、保留结构的理由 |
+| 依赖与规范化 | [01_依赖与范式分析.md](01_依赖与范式分析.md) | 逐表候选码、函数依赖、三类异常、范式依据；独立分解示例的无损连接和依赖保持 |
+| 目标模式与字段 | [02_重构方案与数据字典.md](02_重构方案与数据字典.md) | 15表、96字段的含义、码、外键、CHECK、历史语义与冗余维护 |
+| 更新ER图 | [可编辑源图](ER图/ER模型.drawio)；[总图](ER图/01_总图.svg)、[商品与库存](ER图/02_商品与库存.svg)、[销售与人员](ER图/03_销售与人员.svg)、[预售与采购](ER图/04_预售与采购.svg)，同目录各有PNG | 沿用四页实体关系模型，更新采购限制落实标记与图例 |
+| 数据保留迁移 | [migration.sql](migration.sql) | 前提检查、冲突报告、事务、过滤唯一索引与两个CHECK的调整 |
+| 回归实现 | [regression.sql](regression.sql) | 前后数据/查询/元数据/权限比较，合法与非法写入、最终失败判定 |
+| 实测与原始结果 | [03_迁移与回归验证记录.md](03_迁移与回归验证记录.md)、[results/summary.csv](results/summary.csv)、[results/regression.csv](results/regression.csv) | 45 PASS、0 FAIL的已有证据，迁移冲突和前后CSV |
+| 报告与过程 | [04_报告素材.md](04_报告素材.md)、[ai_log.md](ai_log.md) | 理论与实测的引用范围、讨论与人工复核要求 |
 
-1. [设计与决策](第六周%20设计与决策.md)：范围与小组取舍。
-2. [依赖与范式分析](01_依赖与范式分析.md)：逐表候选码、依赖、三类异常与范式依据，含独立分解示例。
-3. [重构方案与数据字典](02_重构方案与数据字典.md)：15 张表的全部字段、码、外键、CHECK 和冗余维护说明。
-4. [ER 总图](ER图/01_总图.svg)与[可编辑源图](ER图/ER模型.drawio)：四页教材记法，另有三个局部图及 PNG。
-5. [migration.sql](migration.sql)、[regression.sql](regression.sql)与[验证记录](03_迁移与回归验证记录.md)：代码、顺序、预期与实测。
-6. [报告素材](04_报告素材.md)、[AI 记录](ai_log.md)：供第二阶段报告引用与人工补充。
+## 理论分析与实际修改分别看什么
 
-## 当前可检查的实验库
+理论部分解释每张表的候选码、非平凡依赖、插入/删除/更新异常及范式，说明为什么业务模式继续保留15张表。IP与角色涉及群像商品和归属一致性，成交单价、需求快照及计划量保留历史含义；订单总额、可售库存采用查询计算。独立教学关系用于证明分解性质，不作为实际业务迁移新增的表。
 
-本次使用本机 SQL Server 实例 `DESKTOP-NLE7LS7`，Windows 身份连接，保留两个用途明确的实验库：
+实际迁移只落实以下三项，既不拆表也不改写原数据：
 
-| 库 | 状态与用途 |
-| --- | --- |
-| `AnimeGoodsStoreDB_Week6Baseline` | 原始 00—07 生成的完整 v0.1 样例基线，供只读对照 |
-| `AnimeGoodsStoreDB_Week6Target` | 从基线取得的数据及完整 v0.1 结构，再实施第六周迁移；可直接查看或运行回归 |
+| 采购规则 | 落地方式 | 应验证的边界 |
+| --- | --- | --- |
+| 同一预售活动最多一张采购单 | 非空presale_id的过滤唯一索引 | 取消单也占用唯一关联；多张无活动普通补货允许共存 |
+| 类型与活动双向一致 | 替换采购类型CHECK | PRESALE必须关联活动；RESTOCK不得关联活动 |
+| 采购不再使用部分到货状态 | 收紧采购状态CHECK | PARTIAL_RECEIVED拒绝；ORDERED和合法RECEIVED允许 |
 
-这些库是课程样例实验库，不是原 `AnimeGoodsStoreDB` 的在营数据备份。原库本次检查为 15 表、0 视图、商品与订单均为空，因此采用原始脚本准备独立样例基线；原库没有重建或补齐。冲突测试使用的第三个专用库在验证后清理。
+`received_qty`及原范围约束仍保留，未增加零/全量或整单一致性控制。采购完成不自动增加库存，预售履约、采购验收事务仍属后续范围。本周回归通过不代表这些业务联动已实现。
 
-已迁移的 Target **直接运行回归即可**；再次运行迁移会返回 51005，这是一次迁移的前提检查，不是需要修补的失败。运行回归需对基线有读取权限，并能模拟第一阶段三个测试用户。
+## 从空环境准备两个独立数据库
 
-## 从空实验环境复现
+使用SQL Server、SSMS，执行者需有建库、创建对象、读取两库、授权及EXECUTE AS测试用户的权限。Baseline与Target必须位于同一实例、名称不同。准备工具仅使用Python标准库。
 
-环境要求：Microsoft SQL Server、SSMS；已验证实例支持过滤唯一索引、`THROW`、`DROP TABLE IF EXISTS` 和 `CREATE OR ALTER VIEW`。新 SQL 文件为 UTF-8；第一阶段 00—05 原文件是 GB18030，06—07 为 UTF-8，打开时注意正确显示中文。
+在本目录打开PowerShell：
 
-1. **建立独立基线**。在 SSMS 新建数据库 `AnimeGoodsStoreDB_Week6Baseline`。从工作区 `Database_exp/第1-4周业务产出/` 按顺序打开 00—07，把查询编辑器中执行文本的 `AnimeGoodsStoreDB` 替换为该基线库名，再执行；不覆盖原始文件。第一阶段 01 会删表，必须核对其 `USE` 指向新的实验基线。
-2. **取得目标副本**。可通过 SSMS 备份/还原把基线恢复为 `AnimeGoodsStoreDB_Week6Target`，并使用不同物理文件路径。本次实测采用等价的课程复现方式：新建 Target，在其中运行原 01 的改库名执行文本，按下面顺序复制 15 表数据，再运行原 05、06、07 的改库名文本。这样约束、视图、角色、测试用户和数据均齐全，原始时间值也保留。
-3. **保存迁移前结果**。连接基线或未迁移目标，导出 `vw_OrderDetail`、逐订单金额、`vw_ProductSalesSummary`、`vw_InventoryStatus` 的结果。本目录 `results/before_*.csv` 为本次基线值；本次实测还在回归中逐表比较全部列。
-4. **迁移**。在 SSMS 数据库下拉框选中 `AnimeGoodsStoreDB_Week6Target`，打开 `migration.sql` 执行。文件不含 `USE`，不会自动切回原库；当前数据库名要求含 `Week6`。遇到列出的重复活动、错误类型关联或旧状态冲突时停止，不自动改数据。
-5. **回归**。保持连接 Target，打开新的查询窗口，执行 `regression.sql`。顶部 `@BaselineDatabase` 默认指向上述基线；改名时同步修改。基线和目标必须在同一实例且是不同数据库。结果应为 45 PASS、0 FAIL；任一 FAIL 最终抛出 51199。样例父表不能为空，测试编号 986000—986099 不得与业务数据冲突。
-6. **保存与解释结果**。导出判定表、汇总和业务值，并参考验证记录说明差异。目标结构不拆表、不改数据，预期各表行数和内容均相同；新增限制改变的是后续允许写入的数据范围。
-
-若按本次的 DDL 与数据复制方式取得 Target，在执行复制前必须确认 Target 已有 15 张空表，且当前连接为 Target：
-
-```sql
--- 在新的 AnimeGoodsStoreDB_Week6Target 中执行；基线仅作数据来源。
-INSERT dbo.ProductCategory SELECT * FROM AnimeGoodsStoreDB_Week6Baseline.dbo.ProductCategory;
-INSERT dbo.AnimeIP SELECT * FROM AnimeGoodsStoreDB_Week6Baseline.dbo.AnimeIP;
-INSERT dbo.BusinessRole SELECT * FROM AnimeGoodsStoreDB_Week6Baseline.dbo.BusinessRole;
-INSERT dbo.Member SELECT * FROM AnimeGoodsStoreDB_Week6Baseline.dbo.Member;
-INSERT dbo.Supplier SELECT * FROM AnimeGoodsStoreDB_Week6Baseline.dbo.Supplier;
-INSERT dbo.CharacterInfo SELECT * FROM AnimeGoodsStoreDB_Week6Baseline.dbo.CharacterInfo;
-INSERT dbo.Employee SELECT * FROM AnimeGoodsStoreDB_Week6Baseline.dbo.Employee;
-INSERT dbo.Product SELECT * FROM AnimeGoodsStoreDB_Week6Baseline.dbo.Product;
-INSERT dbo.Inventory SELECT * FROM AnimeGoodsStoreDB_Week6Baseline.dbo.Inventory;
-INSERT dbo.PresaleActivity SELECT * FROM AnimeGoodsStoreDB_Week6Baseline.dbo.PresaleActivity;
-INSERT dbo.PresaleReservation SELECT * FROM AnimeGoodsStoreDB_Week6Baseline.dbo.PresaleReservation;
-INSERT dbo.PurchaseOrder SELECT * FROM AnimeGoodsStoreDB_Week6Baseline.dbo.PurchaseOrder;
-INSERT dbo.PurchaseOrderItem SELECT * FROM AnimeGoodsStoreDB_Week6Baseline.dbo.PurchaseOrderItem;
-INSERT dbo.SalesOrder SELECT * FROM AnimeGoodsStoreDB_Week6Baseline.dbo.SalesOrder;
-INSERT dbo.SalesOrderItem SELECT * FROM AnimeGoodsStoreDB_Week6Baseline.dbo.SalesOrderItem;
+```powershell
+python '../第1-4周_建库代码/prepare_acceptance.py' week6
 ```
 
-## 冲突与恢复
+生成的执行副本位于 `../验收准备.local/week6/`，统一为UTF-8。工具只生成文件，不连接数据库，不读取第5周成果。然后在SSMS连接自己的实例，严格按下表逐个执行；遇到非预期错误立即停止，不执行后续文件。
 
-迁移前提或冲突不满足时，错误号为 51000—51007，停止后根据消息检查环境或具体记录。修改全部置于事务内，未提交失败由 CATCH 回滚；成功后若要从头演示，重新取得未迁移 v0.1 副本，不能在已迁移库上运行原 01 来冒充数据迁移。没有自动删改冲突数据或通用降级脚本。
+| 顺序 | 生成文件 | 执行目标与预期 |
+| --- | --- | --- |
+| 00 | `00_新建基线库.sql` | 新建AnimeGoodsStoreDB_Week6Baseline；已存在则51200并停止 |
+| 01—07 | 基础01—07执行副本 | 在Baseline建立完整v0.1，含样例、视图、约束、角色及测试用户；基础16+6项PASS |
+| 10 | `10_新建目标库.sql` | 新建AnimeGoodsStoreDB_Week6Target；已存在则停止 |
+| 11 | `11_目标建表.sql` | 在Target建立15张空表和原约束 |
+| 12 | `12_复制全部基线数据.sql` | 按外键顺序将Baseline的15表全部列复制到Target，保留原始时间值；一个事务内完成 |
+| 13—15 | `13_view.sql`、`14_constraint.sql`、`15_role.sql` | 在Target补齐原视图、约束、角色与测试用户，此时仍为v0.1 |
+| 20 | `20_执行第六周迁移.sql` | 在Target执行本目录migration.sql的副本，成功提交三项限制 |
+| 21 | `21_执行第六周回归.sql` | 在Target执行regression.sql的副本；默认读取上述Baseline，预期45 PASS、0 FAIL |
 
-本次 `results/migration_conflicts.csv` 记录重复活动、错误补货关联、旧状态三类冲突及重复执行前提检查。冲突测试没有交付额外运行器；复验时可在另一个可丢弃的 v0.1 副本中分别构造这些情况，执行迁移并核对 51007、原记录保留且未出现新索引，勿污染留作对照的 Baseline。
+生成文件都指向表中专用库。原01会重建表，只能在本次新库的准备阶段执行；已迁移Target直接运行21回归即可。不得在两库分别重新运行02来构造所谓相同基线，因为默认时间等字段可能不同，回归会逐列比较。
 
-## 文件与阶段边界
+不使用工具时，可按同一顺序在SSMS准备：新建Baseline，替换原01—07执行文本的USE目标并装载；新建Target，仅运行改库名的01，再按ProductCategory、AnimeIP、BusinessRole、Member、Supplier、CharacterInfo、Employee、Product、Inventory、PresaleActivity、PresaleReservation、PurchaseOrder、PurchaseOrderItem、SalesOrder、SalesOrderItem顺序执行 `INSERT dbo.表名 SELECT * FROM AnimeGoodsStoreDB_Week6Baseline.dbo.表名`，然后运行改库名的05—07。也可备份/还原Baseline取得数据相同且物理文件分开的Target。原始脚本不覆盖。
 
-本周只需要回答三个问题：现有结构为什么保留或调整；三项采购限制能否在保留数据的前提下落地；迁移后查询与权限是否保持。按任务原文复核后的交付取舍如下：
+## 现场迁移与回归
 
-| 内容 | 对应要求与取舍 |
-| --- | --- |
-| 15 表依赖分析、目标模式与数据字典 | 明确要求逐表说明；字段释义和范式依据必须准确，不只统计数量 |
-| ER 图 | 作业明确要求更新；复用第五周实体、属性、联系和布局，仅更新落实说明。四页及 SVG/PNG 是沿用的展示形式，不是额外建模成果，也不是课程要求的固定文件数量 |
-| 独立分解示例 | 任务允许现有结构合理时采用；只放在分析文档，不新增演示表或程序 |
-| 两个 SQL 与结果 | 对应保留数据的迁移、查询/完整性/权限回归；45 项中多数是逐表和分组对照，不代表新增 45 项业务功能 |
-| README、报告素材、ai_log | 作业明确要求；分别承担复现、报告引用和过程记录，运行事实统一以验证记录及 CSV 为准 |
-| 库存联动、验收事务、应用界面 | 属于第 7—9 周，继续不在本周实现；不另加收货数量零/全量或整单一致性控制 |
+1. 在迁移前检查Baseline和Target都有完整15表、4视图、相同数据、原角色及测试用户。可在Target先查询原采购约束，解释v0.1允许范围。
+2. 执行20，或在SSMS明确选择Target后执行正式[migration.sql](migration.sql)。正式文件不含USE，当前库名必须含Week6，且不能已有事务。成功后检查新增索引和两个受信任CHECK。
+3. 在新的Target查询窗口执行21，或执行正式[regression.sql](regression.sql)。默认 `@BaselineDatabase=N'AnimeGoodsStoreDB_Week6Baseline'`；库改名时须同步修改执行副本。执行者必须能读取Baseline并模拟测试用户。
+4. 判定表预期为45 PASS、0 FAIL。任一FAIL最终抛51199；不能只凭迁移“执行成功”判断完成。测试写入在事务中回滚，编号986000—986099须未被业务占用。
+5. 对照前后查询及元数据，解释本周改变的是允许写入的数据范围，原业务数据、字段、视图和权限应保持。保存本次实际结果，不以已有CSV冒充重新执行的结果。
 
-`results/` 保留 CSV 原始对照、回归错误消息和基线准备摘要。四页 ER 图中的 U1 表示已验证的活动唯一及类型关联限制；Δ2 说明只移除了部分到货状态，`received_qty` 及其原范围约束仍保留。没有新增单条零/全量、整单一致性约束或相关专项测试。库存联动、完整验收和销售事务继续留应用阶段。
+| 回归部分 | 项数 | 通过标准 |
+| --- | --- | --- |
+| 全表数据 | 15 | 每张表全部列双向EXCEPT为空且行数相同 |
+| 查询 | 5 | 订单详情、逐订单金额、销量、库存、会员统计相同 |
+| 元数据 | 7 | 保留列/默认值、CHECK、外键、索引、视图、角色授权及成员关系 |
+| 目标限制 | 1 | 新索引及两个CHECK存在、启用且受信任 |
+| 合法写入 | 4 | 多张普通补货、新活动采购、ORDERED、合法RECEIVED成功后回滚 |
+| 非法写入 | 7 | 重复活动、类型关联错误、旧状态及原外键/数量/业务编号反例被预期对象拒绝 |
+| 权限 | 6 | 店员销售、库存员警戒值、店长售价允许，相应越权操作拒绝 |
 
-文件尚放在 `week5-9/第六周业务产出/`，未自动搬入组内 `Database_exp`。第一阶段与第五周原始文件保持其阶段状态；后续并入 v1.0 时，应连同本周分析、图、脚本和验证记录一起组织。
+## 原始结果与常见异常
+
+已有2026-10-22隔离实测为45 PASS、0 FAIL，详见[回归CSV](results/regression.csv)、[汇总](results/summary.csv)和[验证记录](03_迁移与回归验证记录.md)。迁移前后订单明细8行、6笔订单合计530元，6件商品可售量合计42；`before_*.csv`与对应迁移后CSV保留业务值，执行环境见[environment.csv](results/environment.csv)，基础执行摘要见[baseline_setup.txt](results/baseline_setup.txt)。本次整理未重跑这些SQL测试。
+
+迁移前发现重复活动、错误类型关联或旧状态时，返回51007并保留原记录，不自动修数据；已迁移Target再次运行迁移返回51005，应直接回归。其他51000—51007按消息核对前提，未提交修改由事务回滚。
+
+三类冲突及重复执行的已有证据见[migration_conflicts.csv](results/migration_conflicts.csv)。如需现场构造冲突，应另用可丢弃的v0.1副本，勿污染Baseline或已验收Target。成功迁移后要重演，需重新取得未迁移副本；没有通用降级脚本。理论论证、数据保持和列出的写入检查各有边界，不能互相代替。
+
+[返回提交总说明](../README.md)

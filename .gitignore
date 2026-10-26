@@ -10,6 +10,7 @@ __pycache__/
 .pytest_cache/
 *.pyc
 config.local.json
+验收准备.local/
 *.local.env
 *.local.sql
 *.jsonl

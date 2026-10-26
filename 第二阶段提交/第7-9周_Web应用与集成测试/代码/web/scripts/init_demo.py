@@ -12,8 +12,24 @@ import pymssql
 from werkzeug.security import generate_password_hash
 
 ROOT = Path(__file__).resolve().parent.parent
-REPO = ROOT.parent
 DATABASE = "AnimeGoodsStoreDB_Week6App"
+BASE_SCRIPTS = (
+    "01_create_tables.sql", "02_insert_sample_data.sql", "03_crud.sql",
+    "04_query.sql", "05_view.sql", "06_constraint.sql", "07_role.sql",
+)
+
+
+def resolve_sources():
+    """兼容开发目录与按阶段组织的提交目录，在连接数据库前核对全部依赖。"""
+    candidates = [
+        (ROOT.parent / "第1-4周业务产出", ROOT.parent / "第六周业务产出/migration.sql"),
+        (ROOT.parents[2] / "第1-4周_建库代码",
+         ROOT.parents[2] / "第6周_函数依赖规范化与迁移/migration.sql"),
+    ]
+    for base, migration in candidates:
+        if all((base / name).is_file() for name in BASE_SCRIPTS) and migration.is_file():
+            return base, migration
+    raise FileNotFoundError("缺少基础01—07或第六周migration.sql，请保留提交目录的同级阶段结构。")
 
 
 def execute_script(connection, source):
@@ -51,6 +67,7 @@ def connect_admin(server, port, trusted=False, password=None):
 
 
 def main():
+    base, migration = resolve_sources()
     trusted = os.environ.get("DB_ADMIN_TRUSTED") == "1"
     password = os.environ.get("DB_ADMIN_PASSWORD")
     if not trusted and not password:
@@ -75,11 +92,11 @@ def main():
         # 固定标识符；不能接受前端、参数或环境变量指定 DROP/CREATE 目标。
         c.execute("CREATE DATABASE AnimeGoodsStoreDB_Week6App")
         c.execute("USE AnimeGoodsStoreDB_Week6App")
-        for name in ["01_create_tables.sql", "02_insert_sample_data.sql", "03_crud.sql", "04_query.sql", "05_view.sql", "06_constraint.sql", "07_role.sql"]:
-            path = REPO / "第1-4周业务产出" / name
+        for name in BASE_SCRIPTS:
+            path = base / name
             source = path.read_text(encoding="gb18030" if int(name[:2]) <= 5 else "utf-8-sig")
             execute_script(connection, source.replace("AnimeGoodsStoreDB", DATABASE))
-        execute_script(connection, (REPO / "第六周业务产出/migration.sql").read_text(encoding="utf-8-sig"))
+        execute_script(connection, migration.read_text(encoding="utf-8-sig"))
         execute_script(connection, (ROOT / "sql/01_web_security.sql").read_text(encoding="utf-8"))
         c = connection.cursor()
         for table, column, sequence in [("Product", "product_id", "WebProductSeq"), ("SalesOrder", "order_id", "WebOrderSeq")]:

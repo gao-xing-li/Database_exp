@@ -1,0 +1,9 @@
+00_create_database.sql: OK; PASS=0
+01_create_tables.sql: OK; PASS=0
+02_insert_sample_data.sql: OK; PASS=0
+03_crud.sql: OK; PASS=0
+04_query.sql: OK; PASS=0
+05_view.sql: OK; PASS=0
+06_constraint.sql: OK; PASS=16
+07_role.sql: OK; PASS=6
+目标库按原始 DDL/视图/权限创建，业务数据逐表从基线复制，保留原始时间值。
