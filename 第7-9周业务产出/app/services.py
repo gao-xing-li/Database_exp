@@ -7,6 +7,7 @@ DUMMY_HASH = generate_password_hash("unmatchable-dummy-password")
 STAFF = {"manager", "clerk", "inventory"}
 SALES = {"manager", "clerk"}
 ALL = STAFF | {"customer"}
+INVENTORY = {"manager", "inventory"}
 
 
 class Services:
@@ -59,7 +60,8 @@ class Services:
         if len(term) > 100:
             raise AppError("INVALID_INPUT", "搜索内容最多100字")
         with self.connection(user) as repo:
-            return repo.products("%" + term + "%", user["role"] in STAFF)
+            return repo.products("%" + term + "%", user["role"] in STAFF,
+                                 self.db.inventory_v2 and user["role"] in INVENTORY)
 
     def product_values(self, data):
         code = text(data.get("product_code"), "商品编号", 20)
@@ -104,9 +106,13 @@ class Services:
             return {}
 
     def adjust_inventory(self, user, product_id, data):
-        require(user, {"manager", "inventory"})
+        require(user, INVENTORY)
         delta = integer(data.get("delta"), "调整数量", -1000000, 1000000)
         reorder = integer(data.get("reorder_point"), "补货警戒值", 0, 1000000)
+        if self.db.inventory_v2:
+            reason = text(data.get("reason"), "调整原因", 200)
+            with self.db.connection(user["role"], autocommit=True) as repo:
+                return repo.adjust_inventory_v2(product_id, delta, reason, user["employee_id"], reorder)
         with self.connection(user) as repo:
             if not repo.product(product_id, lock=True):
                 raise AppError("NOT_FOUND", "商品不存在", 404)
@@ -119,6 +125,14 @@ class Services:
                 raise AppError("BUSINESS_RULE", "调整后库存不能少于预留库存或超出范围", 409)
             repo.adjust_inventory(product_id, delta, reorder)
             return repo.inventory(product_id)
+
+    def set_reorder_point(self, user, product_id, data):
+        require(user, INVENTORY)
+        if not self.db.inventory_v2:
+            raise AppError("NOT_FOUND", "当前版本没有单独设置警戒值的入口", 404)
+        reorder = integer(data.get("reorder_point"), "补货警戒值", 0, 1000000)
+        with self.db.connection(user["role"], autocommit=True) as repo:
+            return repo.set_reorder_point(product_id, reorder)
 
     def orders(self, user):
         require(user, SALES | {"customer"})
@@ -209,6 +223,9 @@ class Services:
             items = repo.items(order_id)
             if not items:
                 raise AppError("BUSINESS_RULE", "请先添加商品明细", 409)
+            # A 的 SQL 结账入口合并前，现有 Web 结账也写入可追溯的库存流水。
+            if self.db.inventory_v2:
+                repo.set_inventory_sale_context(user["employee_id"], order_id)
             # 固定 product_id 顺序；与商品维护/库存调整采用相同锁顺序。
             for item in items:
                 product = repo.product(item["product_id"], lock=True)

@@ -15,6 +15,14 @@ from .services import Services
 from .errors import AppError
 
 ROOT = Path(__file__).resolve().parent.parent
+INVENTORY_DB_ERRORS = {
+    53101: ("NOT_FOUND", "商品不存在", 404),
+    53102: ("INVALID_INPUT", "调整数量必须为非零整数", 400),
+    53103: ("INVALID_INPUT", "请填写有效的调整原因（最多200字）", 400),
+    53104: ("BUSINESS_RULE", "操作员工不存在或已停用", 409),
+    53105: ("BUSINESS_RULE", "调整后库存不能少于预留库存或超出范围", 409),
+    53106: ("INVALID_INPUT", "补货警戒值必须为非负整数", 400),
+}
 
 
 class JSONProvider(DefaultJSONProvider):
@@ -93,6 +101,9 @@ def create_app(config=None):
         if isinstance(error, HTTPException):
             return result(code="INVALID_INPUT" if error.code == 400 else "HTTP_ERROR",
                           message="请求格式有误或地址不可用", status=error.code)
+        if isinstance(error, pymssql.Error) and error.args and error.args[0] in INVENTORY_DB_ERRORS:
+            code, message, status = INVENTORY_DB_ERRORS[error.args[0]]
+            return result(code=code, message=message, status=status)
         logger.error(json.dumps({"time": datetime.now(timezone.utc).isoformat(), "request_id": g.get("request_id"),
                      "operation": request.endpoint, "error_type": type(error).__name__,
                      "traceback": traceback.format_exc()}, ensure_ascii=False))
@@ -113,7 +124,7 @@ def create_app(config=None):
 
     @app.get("/")
     def index():
-        return render_template("index.html")
+        return render_template("index.html", inventory_v2=service.db.inventory_v2)
 
     @app.get("/api/session")
     def get_session():
@@ -156,6 +167,10 @@ def create_app(config=None):
     @app.post("/api/inventory/<int:product_id>/adjust")
     def adjust_inventory(product_id):
         return result(service.adjust_inventory(g.user, product_id, data()))
+
+    @app.patch("/api/inventory/<int:product_id>/reorder-point")
+    def set_reorder_point(product_id):
+        return result(service.set_reorder_point(g.user, product_id, data()))
 
     @app.route("/api/orders", methods=["GET", "POST"])
     def orders():

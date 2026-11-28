@@ -66,13 +66,14 @@ def connect_admin(server, port, trusted=False, password=None):
         database="master", autocommit=True, charset="UTF-8", as_dict=True)
 
 
-def main():
+def initialize(database, login_prefix, config_path, *, extra_scripts=(), config_fields=None):
+    """初始化阶段指定的独立样例库。库名和登录名前缀由阶段入口固定。"""
     base, migration = resolve_sources()
+    extra_sources = [script.read_text(encoding="utf-8-sig") for script in extra_scripts]
     trusted = os.environ.get("DB_ADMIN_TRUSTED") == "1"
     password = os.environ.get("DB_ADMIN_PASSWORD")
     if not trusted and not password:
         sys.exit("请先设置 DB_ADMIN_PASSWORD；此口令只供初始化，不会写入 Web 配置。")
-    config_path = Path(os.environ.get("COURSE_CONFIG", ROOT / "config.local.json"))
     if config_path.exists():
         sys.exit("Web 配置已存在，停止；不覆盖账户配置或已有库。")
     demo_password = os.environ.get("COURSE_DEMO_PASSWORD")
@@ -86,18 +87,26 @@ def main():
     connection = connect_admin(server, port, trusted, password)
     try:
         c = connection.cursor()
-        c.execute(f"SELECT DB_ID({parameter}) AS id", (DATABASE,))
+        c.execute(f"SELECT DB_ID({parameter}) AS id", (database,))
         if fetch_dict(c)["id"] is not None:
             sys.exit("专用样例库已存在，停止；不会自动重建。请使用现有配置启动。")
-        # 固定标识符；不能接受前端、参数或环境变量指定 DROP/CREATE 目标。
-        c.execute("CREATE DATABASE AnimeGoodsStoreDB_Week6App")
-        c.execute("USE AnimeGoodsStoreDB_Week6App")
+        roles = ["auth", "manager", "clerk", "inventory", "customer"]
+        for role in roles:
+            c.execute(f"SELECT name FROM sys.server_principals WHERE name={parameter}", (login_prefix + role,))
+            if c.fetchone():
+                sys.exit("同名课程 SQL 登录已存在，停止以避免覆盖。请改用独立 SQL 实例。")
+        # 标识符由阶段入口固定，环境和网页均不能指定目标。
+        c.execute(f"CREATE DATABASE [{database}]")
+        c.execute(f"USE [{database}]")
         for name in BASE_SCRIPTS:
             path = base / name
             source = path.read_text(encoding="gb18030" if int(name[:2]) <= 5 else "utf-8-sig")
-            execute_script(connection, source.replace("AnimeGoodsStoreDB", DATABASE))
+            execute_script(connection, source.replace("AnimeGoodsStoreDB", database))
         execute_script(connection, migration.read_text(encoding="utf-8-sig"))
-        execute_script(connection, (ROOT / "sql/01_web_security.sql").read_text(encoding="utf-8"))
+        security = (ROOT / "sql/01_web_security.sql").read_text(encoding="utf-8")
+        execute_script(connection, security.replace("course_customer", login_prefix + "customer"))
+        for source in extra_sources:
+            execute_script(connection, source)
         c = connection.cursor()
         for table, column, sequence in [("Product", "product_id", "WebProductSeq"), ("SalesOrder", "order_id", "WebOrderSeq")]:
             # 全部标识符来自本地常量，数字来自数据库；无用户输入拼接。
@@ -105,13 +114,10 @@ def main():
             start = max(fetch_dict(c)["next_id"], 10000)
             c.execute(f"CREATE SEQUENCE dbo.{sequence} AS int START WITH {start} INCREMENT BY 1")
         accounts = {}
-        for role in ["auth", "manager", "clerk", "inventory", "customer"]:
-            username = "course_" + role
+        for role in roles:
+            username = login_prefix + role
             login_password = secrets.token_hex(24) + "aA1!"
             # 随机十六进制和固定标识符，不能由用户提交 SQL 片段。
-            c.execute(f"SELECT name FROM sys.server_principals WHERE name={parameter}", (username,))
-            if c.fetchone():
-                sys.exit("同名课程 SQL 登录已存在，停止以避免覆盖。请改用独立 SQL 实例。")
             c.execute(f"CREATE LOGIN [{username}] WITH PASSWORD=N'{login_password}', CHECK_POLICY=ON")
             c.execute(f"CREATE USER [{username}] FOR LOGIN [{username}]")
             c.execute(f"ALTER ROLE [web_{role}] ADD MEMBER [{username}]")
@@ -128,15 +134,21 @@ def main():
             c.execute("INSERT dbo.WebUser(username,password_hash,role,employee_id,member_id) VALUES ("
                       + ",".join([parameter] * 5) + ")",
                       (username, generate_password_hash(demo_password), role, employee, member))
-        config = {"server": server, "port": port, "database": DATABASE,
+        config = {"server": server, "port": port, "database": database,
                   "secret_key": secrets.token_hex(32), "cookie_secure": False,
                   "log_file": "results/app.local.jsonl", "accounts": accounts}
+        config.update(config_fields or {})
         config_path.write_text(json.dumps(config, indent=2), encoding="utf-8")
         config_path.chmod(0o600)
         print("已完成原01–07、第六周迁移及Web认证/角色/RLS；独立样例库可启动。")
         print("Web账号：manager、clerk、inventory、customer1、customer2；密码为你设置的 COURSE_DEMO_PASSWORD。")
     finally:
         connection.close()
+
+
+def main():
+    config_path = Path(os.environ.get("COURSE_CONFIG", ROOT / "config.local.json"))
+    initialize(DATABASE, "course_", config_path)
 
 
 if __name__ == "__main__":

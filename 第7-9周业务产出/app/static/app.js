@@ -1,5 +1,9 @@
 "use strict";
 const $ = selector => document.querySelector(selector);
+const inventoryV2 = document.body.dataset.inventoryV2 === "true";
+const needsRestock = product => inventoryV2
+  ? product.restock_qty > 0
+  : product.available_qty !== null && product.available_qty <= product.reorder_point;
 const state = {user:null, csrf:"", products:[], orderProducts:[], orders:[], lookups:{}, tab:"products", detail:null, searches:{products:"",inventory:""}, productRequest:0, orderRequest:0, pickerRequest:0, detailRequest:0};
 const roles = {manager:"店长 / 管理员",clerk:"销售 / 收银",inventory:"库存管理员",customer:"顾客"};
 const roleViews = {
@@ -65,7 +69,7 @@ function renderMetrics(loading=false) {
   } else if(stock) {
     values=[["库存商品",state.products.length,"当前检索结果，最多200件"],
       ["可售数量",state.products.reduce((s,p)=>s+Number(p.available_qty||0),0),"实际库存减预留库存"],
-      ["需要补货",state.products.filter(p=>p.available_qty!==null&&p.available_qty<=p.reorder_point).length,"可售数量达到或低于警戒值"]];
+      ["需要补货",state.products.filter(needsRestock).length,inventoryV2?"可售数量低于警戒值":"可售数量达到或低于警戒值"]];
   } else if(state.user.role==="manager") {
     values=[["商品数量",state.products.length,"当前检索结果，最多200件"],
       ["在售商品",state.products.filter(p=>p.product_status==="ON_SALE").length,"当前列表已上架商品"],
@@ -97,7 +101,7 @@ async function loadOrderProducts() {
 }
 function renderProducts(loading=false) {
   const inventoryView=state.tab==="inventory", manager=state.user.role==="manager", customer=state.user.role==="customer";
-  const headings=inventoryView?["商品","实际库存","预留库存","可售库存","补货警戒值","库存状态","操作"]
+  const headings=inventoryView?["商品","实际库存","预留库存","可售库存","补货警戒值",...(inventoryV2?["建议补货量"]:[]),"库存状态","操作"]
     :manager?["商品","类别 / IP","售价","上架状态","操作"]
     :customer?["商品","类别 / IP","售价","可售库存"]:["商品","类别 / IP","售价","可售库存","上架状态"];
   $("#product-headings").innerHTML=`<tr>${headings.map((label,i)=>`<th${i===headings.length-1&&["操作"].includes(label)?' class="right"':""}>${label}</th>`).join("")}</tr>`;
@@ -108,10 +112,11 @@ function renderProducts(loading=false) {
     const product=`<td><div class="product-cell"><span class="product-icon">${esc(p.category_name.slice(0,1))}</span><div><strong>${esc(p.product_name)}</strong><small>${esc(p.product_code)}</small></div></div></td>`;
     const status=`<td><span class="badge ${p.product_status==="STOPPED"?"gray":p.product_status==="PENDING"?"warn":""}">${esc(names[p.product_status])}</span></td>`;
     if(inventoryView) {
-      const hasStock=p.on_hand_qty!==null,low=hasStock&&p.available_qty<=p.reorder_point;
+      const hasStock=p.on_hand_qty!==null,low=needsRestock(p);
       const stockValue=value=>hasStock?esc(value):"—";
+      const restock=inventoryV2?`<td>${esc(p.restock_qty ?? "—")}</td>`:"";
       const action=["manager","inventory"].includes(state.user.role)?`<button data-action="adjust-stock" data-id="${p.product_id}">调库存</button>`:"";
-      return `<tr>${product}<td>${stockValue(p.on_hand_qty)}</td><td>${stockValue(p.reserved_qty)}</td><td>${stockValue(p.available_qty)}</td><td>${stockValue(p.reorder_point)}</td><td><span class="badge ${!hasStock?"gray":low?"warn":""}">${!hasStock?"未登记库存":low?"需要补货":"充足"}</span></td><td><div class="actions">${action}</div></td></tr>`;
+      return `<tr>${product}<td>${stockValue(p.on_hand_qty)}</td><td>${stockValue(p.reserved_qty)}</td><td>${stockValue(p.available_qty)}</td><td>${stockValue(p.reorder_point)}</td>${restock}<td><span class="badge ${!hasStock?"gray":low?"warn":""}">${!hasStock?"未登记库存":low?"需要补货":"充足"}</span></td><td><div class="actions">${action}</div></td></tr>`;
     }
     const info=`${product}<td>${esc(p.category_name)}<small>${esc(p.ip_name||"未指定 IP")}${p.character_name?" · "+esc(p.character_name):""}</small></td><td>¥ ${money(p.sale_price)}</td>`;
     if(manager)return `<tr>${info}${status}<td><div class="actions"><button data-action="edit-product" data-id="${p.product_id}">编辑</button><button class="danger" data-action="delete-product" data-id="${p.product_id}">删除</button></div></td></tr>`;
@@ -195,7 +200,22 @@ $("#new-order").addEventListener("click",()=>$("#new-order-dialog").showModal())
 document.querySelectorAll("[data-tab]").forEach(el=>el.addEventListener("click",guarded(()=>switchTab(el.dataset.tab))));
 document.addEventListener("click",event=>{const close=event.target.closest("[data-close]");if(close)$("#"+close.dataset.close).close();const button=event.target.closest("[data-action]");if(button)guarded(()=>action(button))({preventDefault(){},currentTarget:button});});
 $("#product-form").addEventListener("submit",guarded(async()=>{const data=Object.fromEntries(new FormData($("#product-form"))),id=data.product_id;delete data.product_id;await api("/products"+(id?"/"+id:""),id?"PUT":"POST",data);$("#product-dialog").close();await loadProducts();notice("商品已保存");}));
-$("#inventory-form").addEventListener("submit",guarded(async()=>{const data=Object.fromEntries(new FormData($("#inventory-form")));await api(`/inventory/${data.product_id}/adjust`,"POST",data);$("#inventory-dialog").close();await loadProducts();notice("库存已调整");}));
+$("#inventory-form").addEventListener("submit",guarded(async event=>{
+  const form=event.currentTarget;
+  if(form.dataset.saving || !form.reorder_point.reportValidity())return;
+  const data=Object.fromEntries(new FormData(form));
+  const reorderOnly=event.submitter?.value==="reorder-point";
+  form.dataset.saving="true";
+  try {
+    if(reorderOnly)await api(`/inventory/${data.product_id}/reorder-point`,"PATCH",{reorder_point:data.reorder_point});
+    else await api(`/inventory/${data.product_id}/adjust`,"POST",data);
+    $("#inventory-dialog").close();
+    await loadProducts();
+    notice(reorderOnly?"补货警戒值已更新":"库存已调整");
+  } finally {
+    delete form.dataset.saving;
+  }
+}));
 $("#new-order-form").addEventListener("submit",guarded(async()=>{const data=Object.fromEntries(new FormData($("#new-order-form"))),result=await api("/orders","POST",data);$("#new-order-dialog").close();await viewOrder(result.order_id);await loadOrders();notice("草稿已创建，请添加商品");}));
 async function initialize(){if(!state.user){showSession();return;}state.lookups=await api("/lookups");fillLookups();await switchTab(policy().home);showSession();}
 (async()=>{try{const value=await api("/session");state.user=value.user;state.csrf=value.csrf_token;await initialize();}catch(error){notice(error.message,true);}})();

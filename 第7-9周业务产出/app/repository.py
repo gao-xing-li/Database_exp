@@ -40,10 +40,11 @@ class Repository:
                                      "WHERE member_status='ACTIVE' ORDER BY member_id") if staff else []
         return result
 
-    def products(self, term, staff):
+    def products(self, term, staff, include_restock_quantity=False):
+        suggestion = ", dbo.RestockQuantity(p.product_id,NULL) AS restock_qty" if include_restock_quantity else ""
         return self.all("SELECT TOP (200) p.*, c.category_name, a.ip_name, ch.character_name, "
                         "i.on_hand_qty,i.reserved_qty,i.reorder_point, "
-                        "i.on_hand_qty-i.reserved_qty AS available_qty "
+                        f"i.on_hand_qty-i.reserved_qty AS available_qty{suggestion} "
                         "FROM dbo.Product p JOIN dbo.ProductCategory c ON c.category_id=p.category_id "
                         "LEFT JOIN dbo.AnimeIP a ON a.ip_id=p.ip_id "
                         "LEFT JOIN dbo.CharacterInfo ch ON ch.character_id=p.character_id "
@@ -80,6 +81,18 @@ class Repository:
     def adjust_inventory(self, product_id, delta, reorder_point):
         self.execute("UPDATE dbo.Inventory SET on_hand_qty=on_hand_qty+%s,reorder_point=%s,updated_at=SYSDATETIME() "
                      "WHERE product_id=%s", (delta, reorder_point, product_id))
+
+    def adjust_inventory_v2(self, product_id, delta, reason, employee_id, reorder_point):
+        return self.one("EXEC dbo.AdjustInventory @product_id=%s, @delta=%s, @reason=%s, "
+                        "@employee_id=%s, @reorder_point=%s",
+                        (product_id, delta, reason, employee_id, reorder_point))
+
+    def set_reorder_point(self, product_id, reorder_point):
+        return self.one("EXEC dbo.SetInventoryReorderPoint @product_id=%s, @reorder_point=%s",
+                        (product_id, reorder_point))
+
+    def set_inventory_sale_context(self, employee_id, order_id):
+        self.execute("EXEC dbo.SetInventoryAuditContext 'SALE', %s, %s", (employee_id, order_id))
 
     def orders(self, member_id=None):
         return self.all("SELECT TOP (200) o.order_id,o.order_no,o.order_type,o.member_id,o.cashier_id,"

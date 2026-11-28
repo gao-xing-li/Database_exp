@@ -7,15 +7,19 @@ from .repository import Repository
 class Database:
     def __init__(self, config):
         self.config = config
+        self.inventory_v2 = config.get("inventory_v2", False)
+
+    def transaction(self, role, member_id=None):
+        return self.connection(role, member_id)
 
     @contextmanager
-    def transaction(self, role, member_id=None):
+    def connection(self, role, member_id=None, *, autocommit=False):
         account = self.config["accounts"][role]
         connection = pymssql.connect(
             server=self.config["server"], port=str(self.config["port"]),
             database=self.config["database"], user=account["user"],
             password=account["password"], charset="UTF-8", as_dict=True,
-            login_timeout=5, timeout=10, tds_version="7.4",
+            login_timeout=5, timeout=10, tds_version="7.4", autocommit=autocommit,
         )
         try:
             cursor = connection.cursor()
@@ -27,9 +31,11 @@ class Database:
                 cursor.execute("EXEC sys.sp_set_session_context @key=N'member_id', "
                                "@value=%s, @read_only=1", (member_id,))
             yield Repository(cursor)
-            connection.commit()
+            if not autocommit:
+                connection.commit()
         except BaseException:
-            connection.rollback()
+            if not autocommit:
+                connection.rollback()
             raise
         finally:
             connection.close()
